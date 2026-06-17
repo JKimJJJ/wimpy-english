@@ -342,7 +342,6 @@ function prevCard() {
         render(); // renderFlash() 대신 render()를 불러야 el을 알아서 챙겨갑니다.
     }
 }
-
 // 3. nextCard 함수도 똑같이 수정
 function nextCard() {
     if (currentIndex < CARDS.length - 1) {
@@ -350,7 +349,6 @@ function nextCard() {
         localStorage.setItem('savedIndex', currentIndex);
         render(); // renderFlash() 대신 render()를 불러야 합니다.
     }
-}
 }
 function doShuffle(){sh(order);idx=0;flipped=false;render();}
 function toggleFavorite(e,num){
