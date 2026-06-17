@@ -211,6 +211,23 @@ let mode='flash', idx=0, order=[...Array(58).keys()], flipped=false;
 let qOrder=[], qIdx=0, score={c:0,w:0};
 let wOrder=[], wIdx=0, wFeedback={};
 
+let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+let wrongNotes = JSON.parse(localStorage.getItem('wrongNotes') || '[]');
+let mastered = JSON.parse(localStorage.getItem('mastered') || '[]');
+
+function saveProgress(){
+  localStorage.setItem('wimpy_mode', mode);
+  localStorage.setItem('wimpy_idx', idx);
+}
+
+function loadProgress(){
+  const m = localStorage.getItem('wimpy_mode');
+  const i = localStorage.getItem('wimpy_idx');
+
+  if(m) mode = m;
+  if(i !== null) idx = parseInt(i,10);
+}
+
 function sh(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 function setMode(m){
@@ -249,6 +266,15 @@ function renderFlash(el){
       <div class="card-face">
         <span class="card-num">${String(c.num).padStart(2,'0')}</span>
         <span class="card-page">${c.page}</span>
+        <div style="position:absolute;top:12px;right:14px;display:flex;gap:8px;">
+<button onclick="toggleFavorite(event,${c.num})" style="border:none;background:none;font-size:1.4rem;cursor:pointer">
+${favorites.includes(c.num)?'⭐':'☆'}
+</button>
+
+<button onclick="toggleMastered(event,${c.num})" style="border:none;background:none;font-size:1.2rem;cursor:pointer">
+${mastered.includes(c.num)?'🟢':'⚪'}
+</button>
+</div>
         <div class="card-verb">${c.verb}</div>
         <div class="card-tap">탭해서 뜻 확인 👆</div>
       </div>
@@ -273,10 +299,49 @@ function renderFlash(el){
   </div>`;
 }
 function doFlip(){flipped=!flipped;const ci=document.getElementById('ci');if(ci)ci.classList.toggle('flipped',flipped);}
-function prev(){if(idx>0){idx--;flipped=false;render();}}
-function next(){if(idx<57){idx++;flipped=false;render();}}
-function doShuffle(){sh(order);idx=0;flipped=false;render();}
+function prev(){
+  if(idx>0){
+    idx--;
+    flipped=false;
+    saveProgress();
+    render();
+  }
+}
 
+function next(){
+  if(idx<57){
+    idx++;
+    flipped=false;
+    saveProgress();
+    render();
+  }
+}
+function doShuffle(){sh(order);idx=0;flipped=false;render();}
+function toggleFavorite(e,num){
+  e.stopPropagation();
+
+  if(favorites.includes(num)){
+    favorites = favorites.filter(x=>x!==num);
+  }else{
+    favorites.push(num);
+  }
+
+  localStorage.setItem('favorites',JSON.stringify(favorites));
+  render();
+}
+
+function toggleMastered(e,num){
+  e.stopPropagation();
+
+  if(mastered.includes(num)){
+    mastered = mastered.filter(x=>x!==num);
+  }else{
+    mastered.push(num);
+  }
+
+  localStorage.setItem('mastered',JSON.stringify(mastered));
+  render();
+}
 function renderQuiz(el){
   if(qIdx>=58){
     const pct=Math.round(score.c/58*100);
@@ -310,10 +375,37 @@ function renderQuiz(el){
 }
 function checkQ(btn,correct,chosen){
   document.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
-  if(chosen===correct){btn.classList.add('correct');score.c++;}
-  else{btn.classList.add('wrong');score.w++;document.querySelectorAll('.opt').forEach(o=>{if(o.textContent===correct)o.classList.add('reveal');});}
+
+  if(chosen===correct){
+    btn.classList.add('correct');
+    score.c++;
+  }else{
+    btn.classList.add('wrong');
+    score.w++;
+
+    const current = CARDS[qOrder[qIdx]];
+
+    if(!wrongNotes.includes(current.num)){
+      wrongNotes.push(current.num);
+
+      localStorage.setItem(
+        'wrongNotes',
+        JSON.stringify(wrongNotes)
+      );
+    }
+
+    document.querySelectorAll('.opt').forEach(o=>{
+      if(o.textContent===correct){
+        o.classList.add('reveal');
+      }
+    });
+  }
+
   updProg();
-  setTimeout(()=>{qIdx++;render();},850);
+  setTimeout(()=>{
+    qIdx++;
+    render();
+  },850);
 }
 
 function renderWrite(el){
@@ -432,16 +524,37 @@ function wPrev(){if(wIdx>0){wIdx--;render();}}
 function wNext(){if(wIdx<57){wIdx++;render();}}
 
 function renderList(el){
-  el.innerHTML='<div>'+CARDS.map(c=>`
-  <div class="list-item" onclick="goFlash(${c.num-1})">
-    <span class="li-num">${String(c.num).padStart(2,'0')}</span>
-    <span class="li-verb">${c.verb}</span>
-    <span class="li-meaning">${c.meaning}</span>
-    <span class="li-page">${c.page}</span>
-  </div>`).join('')+'</div>';
+
+  const progress=Math.round(mastered.length/58*100);
+
+  el.innerHTML=`
+  <div style="background:white;padding:12px;border-radius:14px;margin-bottom:10px;">
+    <div>📊 진행률 ${progress}%</div>
+    <div>🟢 암기완료 ${mastered.length}개</div>
+    <div>⭐ 즐겨찾기 ${favorites.length}개</div>
+    <div>❌ 오답노트 ${wrongNotes.length}개</div>
+  </div>
+
+  <div>
+  ${CARDS.map(c=>`
+    <div class="list-item" onclick="goFlash(${c.num-1})">
+
+      <span>${favorites.includes(c.num)?'⭐':''}</span>
+      <span>${mastered.includes(c.num)?'🟢':''}</span>
+
+      <span class="li-num">${String(c.num).padStart(2,'0')}</span>
+      <span class="li-verb">${c.verb}</span>
+      <span class="li-meaning">${c.meaning}</span>
+      <span class="li-page">${c.page}</span>
+
+    </div>
+  `).join('')}
+  </div>
+  `;
 }
 function goFlash(i){mode='flash';idx=i;flipped=false;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.textContent.includes('플래시')));render();}
 
+loadProgress();
 render();
 </script>
 </body>
