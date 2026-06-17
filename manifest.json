@@ -1,0 +1,15 @@
+{
+  "name": "Wimpy English",
+  "short_name": "Wimpy",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5c842",
+  "theme_color": "#f5c842",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
