@@ -136,6 +136,7 @@ del{color:#e63946;background:#fff0f0;border-radius:3px;padding:0 2px;}
   <div class="tabs">
     <button class="tab active" onclick="setMode('flash')">📇 플래시카드</button>
     <button class="tab" onclick="setMode('quiz')">🎯 퀴즈</button>
+    <button class="tab" onclick="setMode('wrongQuiz')">❌ 오답퀴즈</button>
     <button class="tab" onclick="setMode('write')">✍️ 작문</button>
     <button class="tab" onclick="setMode('list')">📋 목록</button>
   </div>
@@ -232,12 +233,51 @@ function sh(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1
 
 function setMode(m){
   mode=m;
+
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  const labels={flash:'플래시',quiz:'퀴즈',write:'작문',list:'목록'};
-  document.querySelectorAll('.tab').forEach(t=>{if(t.textContent.includes(labels[m]))t.classList.add('active');});
-  if(m==='quiz'){qOrder=sh([...Array(58).keys()]);qIdx=0;score={c:0,w:0};}
-  if(m==='write'){wOrder=sh([...Array(58).keys()]);wIdx=0;wFeedback={};}
-  if(m==='flash'){idx=0;flipped=false;}
+
+const labels={
+  flash:'플래시',
+  quiz:'퀴즈',
+  wrongQuiz:'오답',
+  write:'작문',
+  list:'목록'
+};
+
+  document.querySelectorAll('.tab').forEach(t=>{
+    if(t.textContent.includes(labels[m])){
+      t.classList.add('active');
+    }
+  });
+
+  if(m==='quiz'){
+    qOrder=sh([...Array(58).keys()]);
+    qIdx=0;
+    score={c:0,w:0};
+  }
+
+  if(m==='wrongQuiz'){
+    qOrder=wrongNotes.map(n=>n-1);
+    qIdx=0;
+    score={c:0,w:0};
+
+    if(qOrder.length===0){
+      alert('오답노트가 비어있습니다 😊');
+      mode='list';
+    }
+  }
+
+  if(m==='write'){
+    wOrder=sh([...Array(58).keys()]);
+    wIdx=0;
+    wFeedback={};
+  }
+
+  if(m==='flash'){
+    idx=0;
+    flipped=false;
+  }
+
   render();
 }
 
@@ -253,7 +293,7 @@ function render(){
   updProg();
   const el=document.getElementById('main');
   if(mode==='flash')renderFlash(el);
-  else if(mode==='quiz')renderQuiz(el);
+ else if(mode==='quiz' || mode==='wrongQuiz')renderQuiz(el);
   else if(mode==='write')renderWrite(el);
   else renderList(el);
 }
