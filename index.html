@@ -410,6 +410,7 @@ function renderQuiz(el){
       <div class="quiz-type">${type===0?'구동사 → 뜻':'뜻 → 구동사'}</div>
       <div class="quiz-word">${q}</div>
     </div>
+    <div style="display:none">${qIdx}</div>
     <div class="options">${opts.map(o=>`<button class="opt" onclick="checkQ(this,'${ans.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${o.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${o}</button>`).join('')}</div>
   </div>`;
 }
@@ -445,7 +446,7 @@ function checkQ(btn,correct,chosen){
   setTimeout(()=>{
     qIdx++;
     render();
-  },850);
+  },300);
 }
 
 function renderWrite(el){
