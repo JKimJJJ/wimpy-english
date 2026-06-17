@@ -349,10 +349,12 @@ function prev(){
 }
 
 function next(){
-  if(idx<57){
+  if(idx < 57){
     idx++;
-    flipped=false;
-    saveProgress();
+    flipped = false;
+
+    localStorage.setItem('wimpy_idx', idx);
+
     render();
   }
 }
