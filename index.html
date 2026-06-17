@@ -298,59 +298,57 @@ function render(){
   else renderList(el);
 }
 
-function renderFlash(el){
-const card = CARDS[currentIndex];
-  el.innerHTML=`
-  <div class="card-scene" onclick="doFlip()">
-    <div class="card-inner${flipped?' flipped':''}" id="ci">
-      <div class="card-face">
-<span class="card-num">${String(c.num).padStart(2,'0')} · ${c.page}</span>
-        <div style="position:absolute;top:12px;right:14px;display:flex;gap:8px;">
-<button onclick="toggleFavorite(event,${c.num})" style="border:none;background:none;font-size:1.4rem;cursor:pointer">
-${favorites.includes(c.num)?'⭐':'☆'}
-</button>
-
-<button onclick="toggleMastered(event,${c.num})" style="border:none;background:none;font-size:1.2rem;cursor:pointer">
-${mastered.includes(c.num)?'🟢':'⚪'}
-</button>
-</div>
-        <div class="card-verb">${c.verb}</div>
-        <div class="card-tap">탭해서 뜻 확인 👆</div>
-      </div>
-      <div class="card-face card-back">
-        <span class="card-num">${String(c.num).padStart(2,'0')}</span>
-        <span class="card-page">${c.page}</span>
-        <div class="card-meaning">${c.meaning}</div>
-        <div class="card-sub">${c.sub}</div>
-        ${c.ex1_en?`<div class="card-ex">${c.ex1_en}</div><div class="card-ko">${c.ex1_ko}</div>`:''}
-        ${c.quote?`<div class="quote-box"><div class="quote-text">"${c.quote}"</div>${c.quoteKo?`<div style="font-size:0.72rem;color:#999;margin-top:5px;font-family:'Nanum Gothic',sans-serif;line-height:1.5;">"${c.quoteKo}"</div>`:''}
-</div>`:''}
-      </div>
+function renderFlash(el) {
+    const c = CARDS[currentIndex]; 
+    el.innerHTML = `
+    <div class="card-scene" onclick="doFlip()">
+        <div class="card-inner${flipped?' flipped':''}" id="ci">
+            <div class="card-face">
+                <span class="card-num">${String(c.num).padStart(2,'0')} · ${c.page}</span>
+                <div style="position:absolute;top:12px;right:14px;display:flex;gap:8px;">
+                    <button onclick="toggleFavorite(event,${c.num})" style="border:none;background:none;font-size:1.4rem;cursor:pointer">
+                        ${favorites.includes(c.num)?'⭐':'☆'}
+                    </button>
+                    <button onclick="toggleMastered(event,${c.num})" style="border:none;background:none;font-size:1.2rem;cursor:pointer">
+                        ${mastered.includes(c.num)?'🟢':'⚪'}
+                    </button>
+                </div>
+                <div class="card-verb">${c.verb}</div>
+                <div class="card-tap">탭해서 뜻 확인 👆</div>
+            </div>
+            <div class="card-face card-back">
+                <span class="card-num">${String(c.num).padStart(2,'0')} · ${c.page}</span>
+                <div class="card-meaning">${c.meaning}</div>
+                <div class="card-sub">${c.sub}</div>
+                ${c.ex1_en?`<div class="card-ex">${c.ex1_en}</div><div class="card-ko">${c.ex1_ko}</div>`:''}
+                ${c.quote?`<div class="quote-box"><div class="quote-text">"${c.quote}"</div>${c.quoteKo?`<div style="font-size:0.72rem;color:#999;margin-top:5px;font-family:'Nanum Gothic',sans-serif;line-height:1.5;">"${c.quoteKo}"</div>`:''}</div>`:''}
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="nav">
-    <button class="nav-btn" onclick="prev()" ${idx===0?'disabled':''}>◀ 이전</button>
-    <button class="nav-btn" onclick="doFlip()">뒤집기</button>
-    <button class="nav-btn primary" onclick="next()" ${idx===57?'disabled':''}>다음 ▶</button>
-  </div>
-  <div style="text-align:center;margin-top:6px">
-    <button class="shuffle-btn" onclick="doShuffle()">🔀 순서 섞기</button>
-  </div>`;
+    <div class="nav">
+        <button class="nav-btn" onclick="prevCard()">◀ 이전</button>
+        <button class="nav-btn" onclick="doFlip()">뒤집기</button>
+        <button class="nav-btn primary" onclick="nextCard()">다음 ▶</button>
+    </div>
+    <div style="text-align:center;margin-top:6px">
+        <button class="shuffle-btn" onclick="doShuffle()">🔀 순서 섞기</button>
+    </div>`;
 }
 function doFlip(){flipped=!flipped;const ci=document.getElementById('ci');if(ci)ci.classList.toggle('flipped',flipped);}
 function prevCard() {
     if (currentIndex > 0) {
         currentIndex--;
-        localStorage.setItem('savedIndex', currentIndex); // 기록을 저장함
-        renderFlash(); // 화면을 다시 그림
+        localStorage.setItem('savedIndex', currentIndex);
+        render(); // renderFlash() 대신 render()를 불러야 el을 알아서 챙겨갑니다.
     }
 }
 
+// 3. nextCard 함수도 똑같이 수정
 function nextCard() {
     if (currentIndex < CARDS.length - 1) {
         currentIndex++;
-        localStorage.setItem('savedIndex', currentIndex); // 기록을 저장함
-        renderFlash(); // 화면을 다시 그림
+        localStorage.setItem('savedIndex', currentIndex);
+        render(); // renderFlash() 대신 render()를 불러야 합니다.
     }
 }
 }
