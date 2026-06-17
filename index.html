@@ -149,6 +149,30 @@ del{color:#e63946;background:#fff0f0;border-radius:3px;padding:0 2px;}
 </div>
 
 <script>
+// 🔥 공부 진행 저장 변수 (새로 추가)
+let progress = 0;
+  // 🔥 저장 (바뀔 때마다 자동 저장)
+function saveProgress() {
+  localStorage.setItem("flashcard_progress", progress);
+}
+
+// 🔥 불러오기 (앱 켤 때 복구)
+function loadProgress() {
+  const saved = localStorage.getItem("flashcard_progress");
+
+  if (saved !== null) {
+function loadProgress() {
+  const saved = localStorage.getItem("flashcard_idx");
+
+  if (saved !== null) {
+    idx = Number(saved);
+  }
+}
+  }
+}
+
+// 🔥 앱 시작하자마자 실행
+loadProgress();
 const CARDS=[{"num":1,"verb":"GET SOMETHING STRAIGHT","meaning":"분명히 해두다","sub":"오해 없도록 사실을 딱 정리하고 싶을 때","page":"p.2","quote":"let me get something straight: This is a JOURNAL, not a diary.","quoteKo":"분명히 해두자: 이건 일기장이 아니라 저널이야.","ex1_en":"Let me get something straight — I didn't lie.","ex1_ko":"한 가지 확실히 해두자 — 나는 거짓말 안 했어.","ex2_en":"Let me get this straight. You started it first.","ex2_ko":"잠깐, 분명히 해두자. 네가 먼저 시작한 거야.","wq1":"한 가지 확실히 해두자. 나는 거짓말 안 했어.","wa1":"Let me get something straight — I didn't lie.","wq2":"잠깐만, 이거 분명히 해두자. 네가 먼저 시작한 거야.","wa2":"Let me get this straight. You started it first."},
 {"num":2,"verb":"WRITE DOWN","meaning":"적다 / 써내려가다","sub":"생각, 정보 등을 노트에 기록하는 것","page":"p.2","quote":"she thinks I'm going to write down my feelings in here","quoteKo":"엄마는 내가 여기에 감정을 적을 거라고 생각해.","ex1_en":"Let me write down your number so I don't forget.","ex1_ko":"잊어버리지 않게 번호 적어둘게.","ex2_en":"She writes down everything in her notebook.","ex2_ko":"그녀는 모든 것을 노트에 적어둬.","wq1":"잊어버리지 않게 번호 적어둘게.","wa1":"Let me write down your number so I don't forget.","wq2":"그녀는 모든 걸 노트에 적어둬.","wa2":"She writes down everything in her notebook."},
 {"num":3,"verb":"GO OUT (TO DO)","meaning":"~하러 나가다","sub":"목적을 갖고 밖으로 나가는 것","page":"p.2","quote":"when Mom went out to buy this thing","quoteKo":"엄마가 이걸 사러 나갔을 때.","ex1_en":"She went out to grab some coffee before work.","ex1_ko":"그녀는 출근 전에 커피 사러 나갔어.","ex2_en":"I'm going to go out and get some groceries.","ex2_ko":"장보러 나갔다 올게.","wq1":"그녀는 출근 전에 커피 사러 나갔어.","wa1":"She went out to grab some coffee before work.","wq2":"장보러 나갔다 올게.","wa2":"I'm going to go out and get some groceries."},
@@ -352,7 +376,9 @@ function next(){
   if(idx<57){
     idx++;
     flipped=false;
-    saveProgress();
+function saveProgress() {
+  localStorage.setItem("flashcard_idx", idx);
+}
     render();
   }
 }
