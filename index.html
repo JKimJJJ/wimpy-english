@@ -52,7 +52,6 @@ body{background:var(--bg);font-family:'Nanum Gothic',sans-serif;min-height:100vh
 .card-face{position:absolute;inset:0;backface-visibility:hidden;background:var(--card-bg);border-radius:20px;border:1.5px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px;gap:8px;}
 .card-back{transform:rotateY(180deg);}
 .card-num{font-family:'Bangers',cursive;font-size:1.1rem;color:var(--yellow);background:var(--dark);padding:2px 10px;border-radius:20px;position:absolute;top:14px;left:16px;}
-.card-page{font-size:0.68rem;color:var(--muted);position:absolute;top:18px;right:16px;background:var(--bg);padding:2px 8px;border-radius:10px;}
 .card-verb{font-family:'Bangers',cursive;font-size:1.7rem;color:var(--dark);text-align:center;letter-spacing:1px;line-height:1.2;}
 .card-tap{font-size:0.68rem;color:var(--muted);position:absolute;bottom:14px;}
 .card-meaning{font-size:1.2rem;font-weight:800;color:var(--dark);text-align:center;}
@@ -149,6 +148,7 @@ del{color:#e63946;background:#fff0f0;border-radius:3px;padding:0 2px;}
 </div>
 
 <script>
+let currentIndex = parseInt(localStorage.getItem('savedIndex')) || 0;
 const CARDS=[{"num":1,"verb":"GET SOMETHING STRAIGHT","meaning":"분명히 해두다","sub":"오해 없도록 사실을 딱 정리하고 싶을 때","page":"p.2","quote":"let me get something straight: This is a JOURNAL, not a diary.","quoteKo":"분명히 해두자: 이건 일기장이 아니라 저널이야.","ex1_en":"Let me get something straight — I didn't lie.","ex1_ko":"한 가지 확실히 해두자 — 나는 거짓말 안 했어.","ex2_en":"Let me get this straight. You started it first.","ex2_ko":"잠깐, 분명히 해두자. 네가 먼저 시작한 거야.","wq1":"한 가지 확실히 해두자. 나는 거짓말 안 했어.","wa1":"Let me get something straight — I didn't lie.","wq2":"잠깐만, 이거 분명히 해두자. 네가 먼저 시작한 거야.","wa2":"Let me get this straight. You started it first."},
 {"num":2,"verb":"WRITE DOWN","meaning":"적다 / 써내려가다","sub":"생각, 정보 등을 노트에 기록하는 것","page":"p.2","quote":"she thinks I'm going to write down my feelings in here","quoteKo":"엄마는 내가 여기에 감정을 적을 거라고 생각해.","ex1_en":"Let me write down your number so I don't forget.","ex1_ko":"잊어버리지 않게 번호 적어둘게.","ex2_en":"She writes down everything in her notebook.","ex2_ko":"그녀는 모든 것을 노트에 적어둬.","wq1":"잊어버리지 않게 번호 적어둘게.","wa1":"Let me write down your number so I don't forget.","wq2":"그녀는 모든 걸 노트에 적어둬.","wa2":"She writes down everything in her notebook."},
 {"num":3,"verb":"GO OUT (TO DO)","meaning":"~하러 나가다","sub":"목적을 갖고 밖으로 나가는 것","page":"p.2","quote":"when Mom went out to buy this thing","quoteKo":"엄마가 이걸 사러 나갔을 때.","ex1_en":"She went out to grab some coffee before work.","ex1_ko":"그녀는 출근 전에 커피 사러 나갔어.","ex2_en":"I'm going to go out and get some groceries.","ex2_ko":"장보러 나갔다 올게.","wq1":"그녀는 출근 전에 커피 사러 나갔어.","wa1":"She went out to grab some coffee before work.","wq2":"장보러 나갔다 올게.","wa2":"I'm going to go out and get some groceries."},
@@ -299,13 +299,12 @@ function render(){
 }
 
 function renderFlash(el){
-  const c=CARDS[order[idx]];
+const card = CARDS[currentIndex];
   el.innerHTML=`
   <div class="card-scene" onclick="doFlip()">
     <div class="card-inner${flipped?' flipped':''}" id="ci">
       <div class="card-face">
-        <span class="card-num">${String(c.num).padStart(2,'0')}</span>
-        <span class="card-page">${c.page}</span>
+<span class="card-num">${String(c.num).padStart(2,'0')} · ${c.page}</span>
         <div style="position:absolute;top:12px;right:14px;display:flex;gap:8px;">
 <button onclick="toggleFavorite(event,${c.num})" style="border:none;background:none;font-size:1.4rem;cursor:pointer">
 ${favorites.includes(c.num)?'⭐':'☆'}
@@ -339,24 +338,21 @@ ${mastered.includes(c.num)?'🟢':'⚪'}
   </div>`;
 }
 function doFlip(){flipped=!flipped;const ci=document.getElementById('ci');if(ci)ci.classList.toggle('flipped',flipped);}
-function prev(){
-  if(idx>0){
-    idx--;
-    flipped=false;
-    saveProgress();
-    render();
-  }
+function prevCard() {
+    if (currentIndex > 0) {
+        currentIndex--;
+        localStorage.setItem('savedIndex', currentIndex); // 기록을 저장함
+        renderFlash(); // 화면을 다시 그림
+    }
 }
 
-function next(){
-  if(idx < 57){
-    idx++;
-    flipped = false;
-
-    localStorage.setItem('wimpy_idx', idx);
-
-    render();
-  }
+function nextCard() {
+    if (currentIndex < CARDS.length - 1) {
+        currentIndex++;
+        localStorage.setItem('savedIndex', currentIndex); // 기록을 저장함
+        renderFlash(); // 화면을 다시 그림
+    }
+}
 }
 function doShuffle(){sh(order);idx=0;flipped=false;render();}
 function toggleFavorite(e,num){
@@ -385,7 +381,8 @@ function toggleMastered(e,num){
   render();
 }
 function renderQuiz(el){
-  if(qIdx>=58){
+  let quizPool = (mode === 'wrongQuiz') ? wrongList : CARDS;
+  if(qIdx>=quizPool.length){
     const pct=Math.round(score.c/58*100);
     const msg=pct>=90?'🏆 완벽해요!':pct>=70?'👏 잘 했어요!':pct>=50?'💪 한번 더!':'📖 다시 공부해봐요!';
     el.innerHTML=`<div class="result">
@@ -400,7 +397,8 @@ function renderQuiz(el){
       <button class="retry-btn" onclick="setMode('quiz')">다시 풀기</button>
     </div>`;return;
   }
-  const c=CARDS[qOrder[qIdx]];
+  el.innerHTML = '';
+  const c=quizPool[qIdx];
   const type=qIdx%2; // 0=EN→KO, 1=KO→EN
   const q=type===0?c.verb:c.meaning;
   const ans=type===0?c.meaning:c.verb;
@@ -417,16 +415,17 @@ function renderQuiz(el){
   </div>`;
 }
 function checkQ(btn,correct,chosen){
-  document.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
+  localStorage.setItem('savedQuizIdx', qIdx);
+document.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
 
   if(chosen===correct){
-    btn.classList.add('correct');
+btn.classList.add('correct');
     score.c++;
   }else{
-    btn.classList.add('wrong');
+btn.classList.add('wrong');
     score.w++;
 
-    const current = CARDS[qOrder[qIdx]];
+const current = quizPool[qIdx];
 
     if(!wrongNotes.includes(current.num)){
       wrongNotes.push(current.num);
@@ -447,6 +446,7 @@ function checkQ(btn,correct,chosen){
   updProg();
   setTimeout(()=>{
     qIdx++;
+    localStorage.setItem('savedQuizIdx', qIdx);
     render();
   },300);
 }
