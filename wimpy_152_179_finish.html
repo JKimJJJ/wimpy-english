@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wimpy Kid 구동사 — p.152–179</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#f5c842">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Black+Han+Sans&family=Nanum+Gothic:wght@400;700;800&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f0e8;
+  --card-bg:#ffffff;
+  --dark:#1a1d2e;
+  --yellow:#f5c842;
+  --red:#e63946;
+  --green:#52b788;
+  --blue:#4361ee;
+  --text:#1a1d2e;
+  --muted:#888;
+  --border:#e0dbd0;
+  --correct-bg:#eaf3de;--correct:#27500a;
+  --wrong-bg:#fcebeb;--wrong:#501313;
+}
+body{background:var(--bg);font-family:'Nanum Gothic',sans-serif;min-height:100vh;padding:40px 16px 60px;}
+
+/* 좌상단 출처 / 우상단 배포 안내 — 스크롤해도 항상 고정, 휴대폰 상태바와 안 겹치게 여유 확보 */
+.corner-tag{
+  position:fixed;
+  top:calc(env(safe-area-inset-top, 0px) + 38px);
+  font-size:0.62rem;
+  color:#aaa;
+  font-family:'Nanum Gothic',sans-serif;
+  z-index:1000;
+  pointer-events:none;
+  letter-spacing:0.1px;
+  white-space:nowrap;
+}
+.corner-tag.left{left:14px;}
+.corner-tag.right{right:14px;text-align:right;}
+@media (max-width:360px){
+  .corner-tag{font-size:0.56rem;}
+}
+#app{max-width:480px;margin:0 auto;}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:24px;padding:20px 16px;background:var(--dark);border-radius:20px;}
+.header h1{font-family:'Bangers',cursive;font-size:1.7rem;color:var(--yellow);letter-spacing:2px;}
+.header p{font-size:0.72rem;color:rgba(255,255,255,0.35);margin-top:4px;}
+
+/* MODE TABS */
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.tab{flex:1;min-width:0;padding:10px 4px;border-radius:12px;border:1.5px solid var(--border);background:var(--card-bg);color:var(--muted);font-family:'Nanum Gothic',sans-serif;font-size:0.72rem;font-weight:700;cursor:pointer;transition:all .15s;text-align:center;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tab.active{background:var(--dark);color:var(--yellow);border-color:var(--dark);}
+.tab-badge{position:absolute;top:2px;right:2px;background:var(--wrong);color:#fff;font-size:0.58rem;font-weight:800;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1;}
+
+/* PROGRESS */
+.prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.prog-label{font-size:0.72rem;font-weight:700;color:var(--muted);}
+.prog-bar{height:5px;background:var(--border);border-radius:3px;margin-bottom:18px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--red);border-radius:3px;transition:width .35s;}
+
+/* FLASHCARD */
+.card-scene{perspective:1000px;height:280px;cursor:pointer;margin-bottom:14px;user-select:none;}
+.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.4,0,.2,1);}
+.card-inner.flipped{transform:rotateY(180deg);}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;background:var(--card-bg);border-radius:20px;border:1.5px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 22px;gap:6px;overflow-y:auto;}
+.card-back{transform:rotateY(180deg);}
+.card-num-row{position:absolute;top:12px;left:14px;display:flex;align-items:center;gap:4px;z-index:2;}
+.card-num{font-family:'Bangers',cursive;font-size:1.1rem;color:var(--yellow);background:var(--dark);padding:2px 10px;border-radius:20px;}
+.bm-star{width:30px;height:30px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+.bm-star svg{width:22px;height:22px;transition:transform .15s;}
+.bm-star svg path{fill:#d8d3c5;stroke:#d8d3c5;stroke-width:1.5;transition:fill .15s,stroke .15s;}
+.bm-star.on svg path{fill:var(--yellow);stroke:#c79a1e;}
+.bm-star:active svg{transform:scale(0.85);}
+.card-page{font-size:0.68rem;color:var(--muted);position:absolute;top:18px;right:16px;background:var(--bg);padding:2px 8px;border-radius:10px;}
+.card-verb{font-family:'Bangers',cursive;font-size:1.7rem;color:var(--dark);text-align:center;letter-spacing:1px;line-height:1.2;}
+.card-tap{font-size:0.68rem;color:var(--muted);position:absolute;bottom:14px;}
+.card-meaning{font-size:1.2rem;font-weight:800;color:var(--dark);text-align:center;}
+.card-sub{font-size:0.75rem;color:var(--muted);text-align:center;line-height:1.5;margin-top:2px;}
+.card-ex{font-size:0.78rem;color:#555;text-align:center;line-height:1.6;margin-top:6px;font-family:'Patrick Hand',cursive;}
+.card-ex em{color:var(--red);font-style:normal;font-weight:700;}
+.card-ko{font-size:0.7rem;color:var(--muted);text-align:center;font-family:'Nanum Gothic',sans-serif;}
+
+/* NAV */
+.nav{display:flex;gap:8px;margin-bottom:10px;}
+.nav-btn{flex:1;padding:11px;border-radius:12px;border:1.5px solid var(--border);background:var(--card-bg);font-family:'Nanum Gothic',sans-serif;font-size:0.82rem;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s;}
+.nav-btn:hover{background:var(--bg);}
+.nav-btn:disabled{opacity:0.35;cursor:default;}
+.nav-btn.primary{background:var(--dark);color:var(--yellow);border-color:var(--dark);}
+.shuffle-btn{display:block;margin:0 auto;padding:7px 20px;border-radius:20px;border:1.5px solid var(--border);background:transparent;font-family:'Nanum Gothic',sans-serif;font-size:0.75rem;color:var(--muted);cursor:pointer;}
+.shuffle-btn:hover{background:var(--card-bg);}
+
+/* QUIZ */
+.quiz-q{background:var(--card-bg);border-radius:18px;border:1.5px solid var(--border);padding:22px 20px;margin-bottom:12px;text-align:center;}
+.quiz-type{display:inline-block;font-size:0.68rem;font-weight:800;color:var(--red);background:#fff0f1;border:1px solid #ffc0c3;border-radius:20px;padding:3px 10px;margin-bottom:10px;}
+.quiz-word{font-family:'Bangers',cursive;font-size:1.5rem;color:var(--dark);letter-spacing:.5px;}
+.quiz-word.ko{font-family:'Black Han Sans',sans-serif;font-size:1.25rem;letter-spacing:0;}
+.quiz-sub{font-size:0.72rem;color:var(--muted);margin-top:6px;line-height:1.5;}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.opt{padding:13px 10px;border-radius:12px;border:1.5px solid var(--border);background:var(--card-bg);font-family:'Nanum Gothic',sans-serif;font-size:0.82rem;font-weight:700;color:var(--text);cursor:pointer;transition:background .15s,border-color .15s,color .15s;line-height:1.4;text-align:center;-webkit-tap-highlight-color:transparent;}
+@media(hover:hover){.opt:hover:not(.disabled){background:var(--bg);}}
+.opt:focus{outline:none;}
+.opt:focus-visible{outline:none;}
+.opt.correct{background:var(--correct-bg);border-color:var(--correct);color:var(--correct);}
+.opt.wrong{background:var(--wrong-bg);border-color:var(--wrong);color:var(--wrong);}
+.opt.reveal{background:var(--correct-bg);border-color:var(--correct);color:var(--correct);}
+.opt.disabled{cursor:default;pointer-events:none;}
+
+/* WRITING */
+.writing-section{margin-top:14px;background:#f0fff4;border:1.5px solid var(--green);border-radius:16px;padding:14px 16px;}
+.writing-label{font-size:0.68rem;font-weight:800;color:var(--green);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;}
+.writing-item{margin-bottom:14px;}
+.writing-item:last-child{margin-bottom:0;}
+.wq{font-size:0.85rem;font-weight:700;color:var(--dark);margin-bottom:6px;}
+.wq::before{content:"✏️ ";}
+.w-input{width:100%;border:1.5px solid var(--green);border-radius:10px;padding:9px 12px;font-family:'Nanum Gothic',sans-serif;font-weight:700;font-size:0.88rem;color:#333;background:white;resize:none;outline:none;min-height:42px;}
+.w-input:focus{border-color:#1a9e6b;box-shadow:0 0 0 3px rgba(82,183,136,0.15);}
+.w-input:disabled{background:#f5f5f5;color:#aaa;}
+.check-btn{margin-top:6px;width:100%;padding:9px;background:var(--green);color:white;border:none;border-radius:10px;font-family:'Nanum Gothic',sans-serif;font-size:0.82rem;font-weight:800;cursor:pointer;}
+.check-btn:disabled{background:#aaa;cursor:default;}
+.feedback-box{margin-top:8px;background:white;border-radius:10px;border:1.5px solid var(--border);padding:10px 12px;font-size:0.78rem;line-height:1.7;color:#333;}
+.feedback-box .correct-ans{color:var(--green);font-weight:700;font-family:'Patrick Hand',cursive;font-size:0.85rem;}
+.feedback-box .fb-label{font-size:0.68rem;font-weight:800;color:var(--muted);margin-bottom:4px;}
+ins{text-decoration:none;background:#fff0c0;border-radius:3px;padding:0 2px;}
+#verb-hint.revealed{background:transparent!important;color:var(--dark)!important;}
+del{color:#e63946;background:#fff0f0;border-radius:3px;padding:0 2px;}
+
+/* RESULT */
+.result{background:var(--card-bg);border-radius:20px;border:1.5px solid var(--border);padding:28px 20px;text-align:center;}
+.result-emoji{font-size:3rem;margin-bottom:12px;}
+.result-title{font-family:'Black Han Sans',sans-serif;font-size:1.5rem;color:var(--dark);letter-spacing:0.5px;margin-bottom:6px;}
+.result-sub{font-size:0.82rem;color:var(--muted);margin-bottom:20px;}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px;}
+.stat{background:var(--bg);border-radius:12px;padding:12px 8px;text-align:center;}
+.stat-n{font-family:'Bangers',cursive;font-size:1.8rem;line-height:1;}
+.stat-l{font-size:0.68rem;color:var(--muted);margin-top:2px;}
+.retry-btn{display:inline-block;padding:12px 32px;background:var(--dark);color:var(--yellow);border:none;border-radius:14px;font-family:'Nanum Gothic',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:0.3px;cursor:pointer;}
+
+/* LIST */
+.list-search{width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid var(--border);font-family:'Nanum Gothic',sans-serif;font-size:0.85rem;margin-bottom:12px;outline:none;background:var(--card-bg);color:var(--text);}
+.list-search:focus{border-color:var(--dark);}
+.list-empty{text-align:center;padding:30px 10px;color:var(--muted);font-size:0.85rem;}
+.list-item{display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--card-bg);border-radius:12px;border:1.5px solid var(--border);margin-bottom:6px;cursor:pointer;transition:all .15s;}
+.list-item:hover{background:var(--bg);}
+.li-num{font-family:'Bangers',cursive;font-size:1rem;color:var(--yellow);background:var(--dark);padding:1px 7px;border-radius:10px;min-width:34px;text-align:center;flex-shrink:0;}
+.li-star{font-size:0.85rem;flex-shrink:0;width:16px;text-align:center;}
+.li-verb{font-size:0.85rem;font-weight:800;color:var(--dark);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.li-meaning{font-size:0.75rem;color:var(--muted);max-width:35%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.li-page{font-size:0.65rem;color:var(--muted);background:var(--bg);padding:2px 7px;border-radius:8px;white-space:nowrap;flex-shrink:0;}
+
+/* QUOTE */
+.quote-box{background:#fffbea;border-left:3px solid var(--yellow);border-radius:0 10px 10px 0;padding:8px 12px;margin-top:8px;width:100%;}
+.quote-text{font-family:'Patrick Hand',cursive;font-size:0.78rem;color:#555;line-height:1.5;}
+.quote-text em{color:var(--red);font-style:italic;font-weight:700;}
+</style>
+</head>
+<body>
+<div class="corner-tag left">blog.naver.com/google135</div>
+<div class="corner-tag right">무단 전재 및 재배포·유료 판매 금지</div>
+<div id="app">
+  <div class="header">
+    <a href="cover.html" style="display:inline-block;margin-bottom:10px;font-family:'Nanum Gothic',sans-serif;font-size:0.7rem;color:rgba(255,255,255,0.5);text-decoration:none;border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:4px 12px;">📓 표지로</a>
+    <h1>📓 WIMPY KID <span style="font-family:'Nanum Gothic',sans-serif;font-weight:800;font-size:1.6rem;letter-spacing:2px;-webkit-text-stroke:0.5px var(--yellow);">구동사</span></h1>
+    <p>Diary of a Wimpy Kid · p.152–179 · 총 30개</p>
+    <button onclick="resetProgress()" style="margin-top:10px;background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.45);font-family:'Nanum Gothic',sans-serif;font-size:0.7rem;padding:4px 14px;border-radius:20px;cursor:pointer;">🔄 진도 초기화</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="setMode('flash')">📇 플래시카드</button>
+    <button class="tab" onclick="setMode('quiz')">🎯 퀴즈</button>
+    <button class="tab" onclick="setMode('write')">✍️ 작문</button>
+    <button class="tab" onclick="setMode('list')">📋 목록</button>
+  </div>
+  <div class="tabs">
+    <button class="tab" onclick="setMode('bookmark')">🔖 북마크<span class="tab-badge" id="badge-bm" style="display:none"></span></button>
+    <button class="tab" onclick="setMode('quizReview')">📌 퀴즈 오답<span class="tab-badge" id="badge-quiz" style="display:none"></span></button>
+    <button class="tab" onclick="setMode('writeReview')">📝 작문 오답<span class="tab-badge" id="badge-write" style="display:none"></span></button>
+  </div>
+  <div class="prog-row">
+    <span class="prog-label" id="prog-label">1 / 30</span>
+    <span class="prog-label" id="prog-right"></span>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:1.7%"></div></div>
+  <div id="main"></div>
+</div>
+
+<script>
+const CARDS=[
+{"num":1,"verb":"SHOW UP","meaning":"나타나다 / 도착하다","sub":"예정대로 또는 예상치 못하게 나타나는 것 — appear보다 훨씬 자주 쓰는 표현!","page":"p.152","quote":"\"Another great perk is that you get to show up ten minutes late for first period.\"","quoteKo":"또 다른 큰 특권은 1교시에 10분 늦게 나타나도 된다는 거야.","ex1_en":"He showed up two hours late without any explanation.","ex1_ko":"걔가 아무 설명도 없이 두 시간 늦게 나타났어.","ex2_en":"I'm glad you showed up!","ex2_ko":"네가 와줘서 다행이야!","wq1":"걔가 파티에 결국 나타났어.","wa1":"He finally showed up at the party.","wq2":"아무도 안 나타나면 어떡하지?","wa2":"What if nobody shows up?"},
+{"num":2,"verb":"LIFT A FINGER","meaning":"손가락 하나 까딱하다 / 아무것도 안 하다","sub":"주로 부정문으로 — 'didn't lift a finger' = 아무것도 안 했다","page":"p.153","quote":"\"I didn't even have to lift a finger.\"","quoteKo":"손가락 하나 까딱 안 해도 됐어.","ex1_en":"He didn't lift a finger to help.","ex1_ko":"걔는 도와주려고 손가락 하나 까딱 안 했어.","ex2_en":"You don't have to lift a finger — I'll handle everything.","ex2_ko":"아무것도 안 해도 돼 — 내가 다 처리할게.","wq1":"걔는 집안일을 손가락 하나 안 도와.","wa1":"He doesn't lift a finger to help with housework.","wq2":"이번엔 네가 아무것도 안 해도 돼, 내가 다 할게.","wa2":"You don't have to lift a finger this time — I'll do everything."},
+{"num":3,"verb":"SPEAK UP","meaning":"목소리를 높이다 / 의견을 말하다","sub":"더 크게 말하거나, 용기 내어 의견을 표현하는 것","page":"p.153","quote":"\"Rowley must have figured that out, too, because he started to speak up.\"","quoteKo":"Rowley도 그걸 깨달은 것 같아, 더 자주 발언하기 시작했거든.","ex1_en":"Speak up! I can't hear you.","ex1_ko":"좀 더 크게 말해! 안 들려.","ex2_en":"Don't be afraid to speak up in meetings.","ex2_ko":"회의에서 의견 말하는 것 두려워하지 마.","wq1":"미국 가면 적극적으로 의견을 말하는 게 중요해.","wa1":"When I go to the US, it's important to speak up.","wq2":"크게 말해줘, 잘 안 들려.","wa2":"Please speak up — I can't hear you well."},
+{"num":4,"verb":"MISS OUT ON","meaning":"놓치다 / 빠지다","sub":"좋은 기회나 경험을 놓치는 것 — 'you're missing out!' = 너 완전 손해야!","page":"p.153","quote":"\"we would miss twenty minutes of Pre-Algebra.\"","quoteKo":"안전 순찰대 덕분에 Pre-Algebra 수업 20분을 빠질 수 있었어.","ex1_en":"Don't miss out on this opportunity.","ex1_ko":"이 기회 놓치지 마.","ex2_en":"I feel like I'm missing out on so much living here.","ex2_ko":"여기 살면서 너무 많은 걸 놓치고 있는 것 같아.","wq1":"그 경험 꼭 해봐 — 놓치면 후회해.","wa1":"Make sure you do that — you don't want to miss out on it.","wq2":"미국 가면 새로운 것들 놓치지 말고 다 해봐.","wa2":"When you go to the US, don't miss out on new experiences."},
+{"num":5,"verb":"SLACK OFF","meaning":"게으름 피우다 / 나태해지다","sub":"해야 할 일을 하지 않고 느슨하게 대충 하는 것","page":"p.156","quote":"\"I've kind of slacked off ever since I became a Safety Patrol.\"","quoteKo":"안전 순찰대가 된 이후로 좀 게을러졌어.","ex1_en":"Don't slack off just because the deadline is far away.","ex1_ko":"마감이 멀다고 게으름 피우지 마.","ex2_en":"He started slacking off after he got the job.","ex2_ko":"걔가 취직하고 나서 나태해졌어.","wq1":"방심하면 안 돼 — 나태해지기 쉬워.","wa1":"You can't let your guard down — it's easy to slack off.","wq2":"요즘 공부 좀 게을리하고 있어.","wa2":"I've been slacking off on studying lately."},
+{"num":6,"verb":"CATCH ONE'S BREATH","meaning":"숨을 고르다 / 잠깐 쉬다","sub":"격렬한 활동 후 잠깐 멈추고 숨을 가다듬는 것. 비유적으로 '잠깐 여유를 갖다'로도 써요","page":"p.157","quote":"\"we had to take a bunch of breaks in between rolls so we could catch our breath.\"","quoteKo":"굴리는 사이에 숨을 고르기 위해 여러 번 쉬어야 했어.","ex1_en":"Let me catch my breath for a second.","ex1_ko":"잠깐 숨 좀 고를게.","ex2_en":"She ran so fast she couldn't catch her breath.","ex2_ko":"그녀가 너무 빨리 달려서 숨을 못 골랐어.","wq1":"잠깐 숨 고르고 다시 시작하자.","wa1":"Let's catch our breath and start again.","wq2":"이사하고 나서 정신없어서 잠깐 여유가 필요해.","wa2":"After moving, things have been so hectic — I need a moment to catch my breath."},
+{"num":7,"verb":"FALL APART","meaning":"무너지다 / 망가지다 / 틀어지다","sub":"계획, 관계, 물건 등이 산산조각나는 것","page":"p.157","quote":"\"Our plan to build the world's biggest snowman was starting to fall apart.\"","quoteKo":"세계 최대 눈사람을 만들려는 우리 계획이 무너지기 시작했어.","ex1_en":"The plan started to fall apart when nobody showed up.","ex1_ko":"아무도 안 나타나자 계획이 무너지기 시작했어.","ex2_en":"Their friendship fell apart after the argument.","ex2_ko":"말다툼 후에 그들의 우정이 무너졌어.","wq1":"모든 게 틀어지기 시작했어.","wa1":"Everything started to fall apart.","wq2":"계획이 망가지면 어떡하지?","wa2":"What if the plan falls apart?"},
+{"num":8,"verb":"BLOCK ~ IN","meaning":"막아두다 / 가로막다","sub":"차나 사람이 빠져나가지 못하게 막는 것","page":"p.158","quote":"\"our snowball was blocking her car in.\"","quoteKo":"우리 눈덩이가 그녀의 차를 막고 있었어.","ex1_en":"Someone blocked my car in the parking lot.","ex1_ko":"주차장에서 누가 내 차를 막아놨어.","ex2_en":"A truck blocked the entrance in.","ex2_ko":"트럭이 입구를 막았어.","wq1":"내 차가 옆 차에 막혀서 못 나가.","wa1":"My car is blocked in by the car next to it.","wq2":"출구가 막혀서 나갈 수가 없어.","wa2":"The exit is blocked in and I can't get out."},
+{"num":9,"verb":"BE IN FOR IT","meaning":"혼날 것 같다 / 큰일 날 것 같다","sub":"나쁜 일이 곧 닥칠 것을 직감할 때 — 주로 'I knew I was in for it'으로 써요","page":"p.160","quote":"\"I knew I was in for it.\"","quoteKo":"혼날 것을 직감했어.","ex1_en":"When I saw his face, I knew I was in for it.","ex1_ko":"걔 표정 보고 나 혼나겠다 싶었어.","ex2_en":"Oh no, she found out — you're in for it now.","ex2_ko":"아, 걔가 알아버렸어 — 이제 넌 혼날 거야.","wq1":"엄마 표정 보고 나 혼나겠다 싶었어.","wa1":"When I saw my mom's face, I knew I was in for it.","wq2":"그 말 했다간 큰일 날 것 같아.","wa2":"If I say that, I'll be in for it."},
+{"num":10,"verb":"TEAR UP","meaning":"훼손하다 / 찢다 / 뒤집어 망가뜨리다","sub":"잔디, 도로, 서류 등을 뜯어내거나 망가뜨리는 것","page":"p.161","quote":"\"Dad was ALREADY mad at me for tearing up the sod.\"","quoteKo":"아빠는 잔디를 뒤집어놓은 것 때문에 이미 화가 나 있었어.","ex1_en":"The construction crew tore up the whole street.","ex1_ko":"공사팀이 도로 전체를 뒤집어 놨어.","ex2_en":"She tore up the letter and threw it away.","ex2_ko":"그녀가 편지를 찢어서 버렸어.","wq1":"그 서류 찢어버렸어.","wa1":"I tore up those documents.","wq2":"공사하면서 정원을 다 망가뜨렸어.","wa2":"The construction tore up the whole garden."},
+{"num":11,"verb":"GET A KICK OUT OF","meaning":"재미있어하다 / 즐기다","sub":"어떤 것에서 즐거움을 느끼거나 재미있어하는 것","page":"p.161","quote":"\"I thought he might actually get a kick out of what happened.\"","quoteKo":"걔가 일어난 일을 재미있어할 줄 알았어.","ex1_en":"He really gets a kick out of telling that story.","ex1_ko":"걔가 그 이야기 하는 걸 정말 즐거워해.","ex2_en":"I get a kick out of watching old cartoons.","ex2_ko":"나 옛날 만화 보는 거 진짜 재미있어.","wq1":"그 영화 보면서 정말 재미있었어.","wa1":"I really got a kick out of that movie.","wq2":"걔가 그런 장난 진짜 좋아해.","wa2":"He really gets a kick out of pranks like that."},
+{"num":12,"verb":"HAVE ONE'S HEART SET ON","meaning":"~을 마음에 두다 / 굳게 바라다","sub":"어떤 것을 정말 원하고 그것에 마음을 굳힌 것","page":"p.161","quote":"\"he had his heart set on rolling that snowball down the hill.\"","quoteKo":"걔는 그 눈덩이를 언덕 아래로 굴리겠다고 마음을 굳혔어.","ex1_en":"She has her heart set on going to Harvard.","ex1_ko":"그녀는 하버드 가는 것을 굳게 바라고 있어.","ex2_en":"I had my heart set on that job.","ex2_ko":"나 그 직장 정말 원했어.","wq1":"나 미국 이민 마음 굳혔어.","wa1":"I have my heart set on moving to the US.","wq2":"걔가 그 프로젝트 정말 하고 싶어해.","wa2":"He has his heart set on doing that project."},
+{"num":13,"verb":"HOG","meaning":"독차지하다 / 혼자만 쓰다","sub":"다른 사람을 배려하지 않고 혼자서 다 쓰거나 차지하는 것","page":"p.164","quote":"\"this kid named Bryan Little has been hogging it all to himself.\"","quoteKo":"Bryan Little이라는 애가 혼자 다 독차지하고 있었어.","ex1_en":"Stop hogging the remote!","ex1_ko":"리모컨 혼자 다 쓰지 마!","ex2_en":"He's been hogging the bathroom for an hour.","ex2_ko":"걔가 한 시간째 화장실 독차지하고 있어.","wq1":"컴퓨터 혼자 다 쓰지 마.","wa1":"Don't hog the computer all by yourself.","wq2":"그 사람이 회의에서 발언권을 독차지했어.","wa2":"He hogged all the speaking time in the meeting."},
+{"num":14,"verb":"GIVE ~ THE AXE","meaning":"해고하다 / 자르다","sub":"직장이나 역할에서 잘리는 것 — get fired보다 더 생생한 구어체 표현","page":"p.164","quote":"\"I guess that's why they gave him the axe.\"","quoteKo":"그래서 걔를 잘라낸 것 같아.","ex1_en":"The company gave him the axe after the incident.","ex1_ko":"그 사건 후에 회사가 걔를 잘랐어.","ex2_en":"I'm afraid I might get the axe if sales don't improve.","ex2_ko":"매출이 안 오르면 나 잘릴 것 같아.","wq1":"성과가 나빠서 결국 잘렸어.","wa1":"He got the axe because of poor performance.","wq2":"언제 잘릴지 몰라서 불안해.","wa2":"I'm nervous because I don't know when I might get the axe."},
+{"num":15,"verb":"GET IN ON","meaning":"끼어들다 / 참여하다 / 한몫 하다","sub":"어떤 좋은 것이나 기회에 참여하거나 끼어드는 것","page":"p.165","quote":"\"I wanted to get in on some of that kind of fame.\"","quoteKo":"나도 그런 유명세에 끼고 싶었어.","ex1_en":"Can I get in on the deal?","ex1_ko":"나도 그 거래에 낄 수 있어?","ex2_en":"Everyone wanted to get in on the new project.","ex2_ko":"다들 그 새 프로젝트에 참여하고 싶어했어.","wq1":"나도 그 계획에 참여할 수 있어?","wa1":"Can I get in on the plan?","wq2":"그 기회에 끼어들고 싶어.","wa2":"I want to get in on that opportunity."},
+{"num":16,"verb":"HAVE A TASTE OF","meaning":"~을 맛보다 / 경험해보다","sub":"어떤 것을 처음으로 조금 경험해보는 것","page":"p.165","quote":"\"I had a taste of what it's like to be famous at my school.\"","quoteKo":"학교에서 유명해지는 게 어떤 건지 맛봤어.","ex1_en":"I had a taste of life in the US when I visited.","ex1_ko":"방문했을 때 미국 생활을 조금 경험해봤어.","ex2_en":"Once you have a taste of success, you want more.","ex2_ko":"한번 성공을 맛보면 더 원하게 돼.","wq1":"미국 생활을 조금 맛봤어.","wa1":"I had a taste of life in the US.","wq2":"자유의 맛을 한번 봐봐.","wa2":"Once you have a taste of freedom, you'll want more."},
+{"num":17,"verb":"TEAM UP","meaning":"팀을 이루다 / 협력하다","sub":"어떤 목표를 위해 함께 힘을 합치는 것","page":"p.167","quote":"\"Me and Rowley decided to team up and do a cartoon together.\"","quoteKo":"나랑 Rowley는 팀을 이뤄 함께 만화를 그리기로 했어.","ex1_en":"Let's team up for this project.","ex1_ko":"이 프로젝트 같이 팀 이뤄서 하자.","ex2_en":"The two companies teamed up to develop the product.","ex2_ko":"두 회사가 협력해서 제품을 개발했어.","wq1":"같이 팀 이뤄서 해보자.","wa1":"Let's team up and do this together.","wq2":"그 두 팀이 힘을 합쳤어.","wa2":"Those two teams teamed up."},
+{"num":18,"verb":"HIT A WALL","meaning":"벽에 부딪히다 / 막히다","sub":"진행하다가 갑자기 막혀버리는 것 — 아이디어, 공부, 일 등에서","page":"p.167","quote":"\"When we tried to think up some jokes, we kind of hit a wall.\"","quoteKo":"농담을 생각해내려 했는데 벽에 부딪혔어.","ex1_en":"I hit a wall trying to write the essay.","ex1_ko":"에세이 쓰다가 막혀버렸어.","ex2_en":"The project hit a wall when funding ran out.","ex2_ko":"자금이 떨어지자 프로젝트가 막혔어.","wq1":"공부하다가 막혔어.","wa1":"I hit a wall while studying.","wq2":"영어 공부 중에 벽에 부딪히면 어떡해?","wa2":"What should I do when I hit a wall while learning English?"},
+{"num":19,"verb":"GET BOGGED DOWN","meaning":"수렁에 빠지다 / 막혀서 진도를 못 내다","sub":"너무 세부적인 것에 매몰되어 전체 진행이 막히는 것","page":"p.167","quote":"\"That way we wouldn't get bogged down with having to write actual jokes.\"","quoteKo":"그러면 실제 농담을 쓰는 데 막히지 않아도 됐어.","ex1_en":"Don't get bogged down in the details.","ex1_ko":"세부 사항에 너무 매몰되지 마.","ex2_en":"The project got bogged down in bureaucracy.","ex2_ko":"프로젝트가 관료주의에 수렁에 빠졌어.","wq1":"세세한 것에 너무 매몰되지 마.","wa1":"Don't get bogged down in the small details.","wq2":"준비하다가 디테일에 빠져서 진도를 못 냈어.","wa2":"I got bogged down in the details while preparing."},
+{"num":20,"verb":"BANG OUT","meaning":"빠르게 만들어내다 / 뚝딱 해치우다","sub":"crank out과 비슷하지만 더 힘차고 거칠게 빠르게 만드는 느낌","page":"p.167","quote":"\"We banged out a bunch of characters real quick.\"","quoteKo":"캐릭터들을 엄청 빠르게 뚝딱 만들어냈어.","ex1_en":"I banged out the report in two hours.","ex1_ko":"보고서를 두 시간 만에 뚝딱 해치웠어.","ex2_en":"She can bang out five emails before breakfast.","ex2_ko":"그녀는 아침 먹기 전에 이메일 5개를 뚝딱 쓸 수 있어.","wq1":"숙제를 30분 만에 해치웠어.","wa1":"I banged out the homework in 30 minutes.","wq2":"그 디자인 빠르게 뚝딱 만들었어.","wa2":"I banged out that design real quick."},
+{"num":21,"verb":"TAKE OVER","meaning":"인계받다 / 맡다 / 장악하다","sub":"책임이나 역할을 넘겨받거나 주도권을 갖는 것","page":"p.169","quote":"\"I pretty much let Rowley take over the whole operation.\"","quoteKo":"나는 Rowley가 전체 작업을 맡게 냅뒀어.","ex1_en":"She took over the project when the manager left.","ex1_ko":"매니저가 떠나자 그녀가 프로젝트를 맡았어.","ex2_en":"Don't let him take over the whole conversation.","ex2_ko":"걔가 대화를 혼자 다 이끌게 내버려두지 마.","wq1":"내가 자리 비운 동안 네가 맡아줄 수 있어?","wa1":"Can you take over while I'm away?","wq2":"그 회사가 다른 회사를 인수했어.","wa2":"That company took over another company."},
+{"num":22,"verb":"GET ON A ROLL","meaning":"탄력받다 / 잘 되기 시작하다","sub":"한번 잘 되기 시작하면서 계속 잘 풀리는 상태","page":"p.169","quote":"\"I really got on a roll.\"","quoteKo":"나는 정말 탄력을 받았어.","ex1_en":"Once I started writing, I really got on a roll.","ex1_ko":"쓰기 시작하자 탄력이 붙었어.","ex2_en":"The team is on a roll — three wins in a row!","ex2_ko":"그 팀 탄력받았어 — 연속 3승!","wq1":"한번 탄력 받으면 멈추기가 힘들어.","wa1":"Once you get on a roll, it's hard to stop.","wq2":"요즘 영어 공부 탄력받아서 잘 되고 있어.","wa2":"My English study has been on a roll lately."},
+{"num":23,"verb":"PACK UP","meaning":"짐을 싸다 / 물건을 챙기다","sub":"물건을 정리해서 가방에 넣거나 떠날 준비를 하는 것","page":"p.170","quote":"\"he packed up his comics and went home.\"","quoteKo":"걔가 만화를 챙겨서 집에 갔어.","ex1_en":"It's time to pack up and go home.","ex1_ko":"짐 싸서 집에 갈 시간이야.","ex2_en":"She packed up her desk when she quit.","ex2_ko":"그녀가 사직할 때 책상 짐을 쌌어.","wq1":"공부 끝났으면 짐 싸고 가자.","wa1":"Let's pack up and go since we're done studying.","wq2":"이민 가려면 짐 싸는 게 정말 힘들어.","wa2":"Packing up to move to another country is really tough."},
+{"num":24,"verb":"BREAK A SWEAT","meaning":"땀 흘리다 / 힘들어하다","sub":"주로 부정문으로 — 'didn't break a sweat' = 식은 죽 먹기였다, 전혀 힘들지 않았다","page":"p.172","quote":"\"I must've banged out twenty strips, and I didn't even break a sweat.\"","quoteKo":"만화 20편을 뚝딱 그려냈는데 땀도 안 났어.","ex1_en":"She finished the marathon without even breaking a sweat.","ex1_ko":"그녀가 마라톤을 너무 쉽게 완주했어.","ex2_en":"I can do that without breaking a sweat.","ex2_ko":"그 정도는 식은 죽 먹기야.","wq1":"그 시험은 식은 죽 먹기였어.","wa1":"That exam was a piece of cake — I didn't even break a sweat.","wq2":"걔는 힘든 일도 땀 한 방울 안 흘리고 해.","wa2":"He handles tough tasks without even breaking a sweat."},
+{"num":25,"verb":"RUN OUT OF","meaning":"다 떨어지다 / 고갈되다","sub":"공급량이나 양이 다 소진되어 없어지는 것","page":"p.172","quote":"\"I will NEVER run out of new material.\"","quoteKo":"나는 절대 새 아이디어가 떨어지지 않을 거야.","ex1_en":"We ran out of time before we finished.","ex1_ko":"다 끝내기 전에 시간이 다 떨어졌어.","ex2_en":"I ran out of ideas for the project.","ex2_ko":"프로젝트 아이디어가 다 떨어졌어.","wq1":"배터리가 다 떨어졌어.","wa1":"My battery ran out.","wq2":"말이 다 떨어져서 뭐라고 해야 할지 모르겠어.","wa2":"I ran out of things to say."},
+{"num":26,"verb":"TURN ~ IN","meaning":"제출하다 / 넘겨주다","sub":"숙제, 서류, 물건 등을 담당자에게 제출하는 것","page":"p.173","quote":"\"when I went to turn my strips in, I saw that there was a pile of comics from other kids.\"","quoteKo":"만화를 제출하러 갔더니 다른 애들 만화 더미가 있었어.","ex1_en":"Please turn in your assignments by Friday.","ex1_ko":"금요일까지 과제 제출해주세요.","ex2_en":"I turned in my report this morning.","ex2_ko":"오늘 아침에 보고서 제출했어.","wq1":"과제 언제 제출해야 해?","wa1":"When do I need to turn in the assignment?","wq2":"이민 서류 제출하는 데 시간이 걸렸어.","wa2":"It took time to turn in all the immigration documents."},
+{"num":27,"verb":"SLIP ~ UNDER","meaning":"몰래 밀어넣다 / 슬쩍 끼워넣다","sub":"들키지 않게 서류나 물건을 슬쩍 어딘가에 끼워넣는 것","page":"p.173","quote":"\"I slipped them under a pile of paperwork on Mr. Ira's desk.\"","quoteKo":"Ira 선생님 책상 서류 더미 아래에 몰래 넣었어.","ex1_en":"She slipped a note under the door.","ex1_ko":"그녀가 문 아래로 쪽지를 슬쩍 밀어넣었어.","ex2_en":"He slipped the money under the table.","ex2_ko":"걔가 테이블 밑으로 돈을 슬쩍 밀어넣었어.","wq1":"문 아래로 쪽지를 슬쩍 밀어넣었어.","wa1":"I slipped a note under the door.","wq2":"서류 더미 밑에 몰래 끼워넣었어.","wa2":"I slipped it under the pile of documents."},
+{"num":28,"verb":"TURN UP","meaning":"나타나다 / 발견되다","sub":"예상치 못한 때에 나타나거나 발견되는 것 — show up과 비슷하지만 더 우연한 느낌","page":"p.175","quote":"\"Hopefully, those ones won't turn up until I'm in high school.\"","quoteKo":"고등학생이 될 때까지 그것들이 나오지 않기를 바라.","ex1_en":"The missing keys finally turned up under the couch.","ex1_ko":"잃어버린 열쇠가 소파 밑에서 나왔어.","ex2_en":"Something always turns up when you least expect it.","ex2_ko":"가장 예상 못할 때 항상 뭔가 나타나.","wq1":"잃어버렸던 서류가 나왔어.","wa1":"The missing documents finally turned up.","wq2":"그 사람이 갑자기 나타났어.","wa2":"He suddenly turned up out of nowhere."},
+{"num":29,"verb":"PLAY IT COOL","meaning":"태연한 척하다 / 쿨하게 행동하다","sub":"흥분되거나 기쁜 상황에서도 침착하고 태연한 척하는 것","page":"p.176","quote":"\"I decided to just play it cool for a while instead.\"","quoteKo":"대신 당분간 그냥 침착하게 행동하기로 했어.","ex1_en":"Just play it cool — don't let them see you nervous.","ex1_ko":"태연하게 있어 — 긴장한 거 티내지 마.","ex2_en":"He tried to play it cool when he saw his crush.","ex2_ko":"걔가 좋아하는 사람 봤을 때 쿨한 척하려고 했어.","wq1":"긴장해도 태연한 척해야 해.","wa1":"Even if you're nervous, play it cool.","wq2":"흥분해도 쿨하게 있었어.","wa2":"I was excited but I played it cool."},
+{"num":30,"verb":"SHAKE UP","meaning":"충격받다 / 뒤흔들리다 / 흔들어놓다","sub":"심리적으로 충격을 받아 흔들리는 것. 또는 조직·계획을 뒤흔드는 것","page":"p.179","quote":"\"when Rowley came back fifteen minutes later, he looked pretty shaken up.\"","quoteKo":"15분 후 Rowley가 돌아왔는데 꽤 충격받은 것 같았어.","ex1_en":"She was pretty shaken up after the accident.","ex1_ko":"그녀는 사고 후에 꽤 충격을 받았어.","ex2_en":"The new manager really shook things up.","ex2_ko":"새 매니저가 조직을 완전히 뒤흔들었어.","wq1":"그 소식을 듣고 꽤 충격받았어.","wa1":"I was pretty shaken up when I heard the news.","wq2":"그 사건이 나를 완전히 흔들어놨어.","wa2":"That incident really shook me up."}
+];
+
+let mode='flash', idx=0, order=[...Array(30).keys()], flipped=false;
+let listFilter='';
+let qOrder=[], qIdx=0, score={c:0,w:0};
+let wOrder=[...Array(30).keys()], wIdx=0, wFeedback={};
+
+// 오답노트 상태: 카드 num(1~30) 기준으로 저장
+let quizWrong = new Set();   // 퀴즈에서 틀린 적 있는 카드 num
+let writeWrong = new Set();  // 작문에서 틀린 적 있는 카드 num (각 카드 1·2번 문항 중 하나라도 오답이면 포함)
+let bookmarked = new Set();  // 사용자가 직접 북마크한 카드 num
+let reviewQOrder=[], reviewQIdx=0, reviewScore={c:0,w:0};
+let reviewWOrder=[], reviewWIdx=0;
+let bmOrder=[], bmIdx=0;
+
+function sh(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ── localStorage 진도 저장/불러오기 ── */
+const SAVE_KEY = 'wimpykid_progress_v1::p152-179';
+
+function saveProgress(){
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      flashIdx: idx,
+      flashOrder: order,
+      wIdx: wIdx,
+      wOrder: wOrder,
+      wFeedback: wFeedback,
+      quizWrong: [...quizWrong],
+      writeWrong: [...writeWrong],
+      bookmarked: [...bookmarked],
+    }));
+  } catch(e){ /* 저장 실패 시 무시 */ }
+}
+
+function loadProgress(){
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const p = JSON.parse(raw);
+    idx       = p.flashIdx  ?? 0;
+    order     = p.flashOrder ?? [...Array(30).keys()];
+    wIdx      = p.wIdx      ?? 0;
+    wOrder    = p.wOrder    ?? [...Array(30).keys()];
+    wFeedback = p.wFeedback ?? {};
+    quizWrong = new Set(p.quizWrong ?? []);
+    writeWrong= new Set(p.writeWrong ?? []);
+    bookmarked= new Set(p.bookmarked ?? []);
+    return true;
+  } catch(e){ return false; }
+}
+
+function resetProgress(){
+  if(!confirm('진도를 초기화할까요?\n플래시카드 위치, 작문 첨삭, 오답노트가 모두 삭제됩니다.')) return;
+  localStorage.removeItem(SAVE_KEY);
+  idx=0; order=[...Array(30).keys()]; flipped=false;
+  wIdx=0; wOrder=[...Array(30).keys()]; wFeedback={};
+  quizWrong=new Set(); writeWrong=new Set(); bookmarked=new Set();
+  mode='flash';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.getAttribute('onclick')===`setMode('flash')`));
+  showToast('✅ 진도가 초기화됐어요!');
+  render();
+}
+
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';
+    t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--dark);color:var(--yellow);font-family:\'Nanum Gothic\',sans-serif;font-size:0.82rem;font-weight:700;padding:10px 22px;border-radius:20px;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:9999;opacity:0;transition:opacity .3s;';
+    document.body.appendChild(t);}
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>{t.style.opacity='0';},2000);
+}
+
+function updateBadges(){
+  const bq=document.getElementById('badge-quiz'), bw=document.getElementById('badge-write'), bb=document.getElementById('badge-bm');
+  if(bq){bq.textContent=quizWrong.size;bq.style.display=quizWrong.size?'flex':'none';}
+  if(bw){bw.textContent=writeWrong.size;bw.style.display=writeWrong.size?'flex':'none';}
+  if(bb){bb.textContent=bookmarked.size;bb.style.display=bookmarked.size?'flex':'none';}
+}
+
+function toggleBookmark(num, ev){
+  if(ev) ev.stopPropagation();
+  const wasOn = bookmarked.has(num);
+  if(wasOn) bookmarked.delete(num); else bookmarked.add(num);
+  saveProgress();
+  updateBadges();
+  document.querySelectorAll(`.bm-star[data-num="${num}"]`).forEach(s=>s.classList.toggle('on', bookmarked.has(num)));
+  if(mode==='bookmark' && wasOn){
+    showToast('별표를 해제했어요. 다음 카드로 넘어가면 목록에서 빠져요.');
+  }
+}
+/* ─────────────────────────────────── */
+
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.tab').forEach(t=>{
+    const isActive = t.getAttribute('onclick') === `setMode('${m}')`;
+    t.classList.toggle('active', isActive);
+  });
+  if(m==='quiz'){qOrder=sh([...Array(30).keys()]);qIdx=0;score={c:0,w:0};}
+  if(m==='write'&&wOrder.length===0){wOrder=[...Array(30).keys()];}
+  if(m==='flash'){flipped=false;}
+  if(m==='quizReview'){reviewQOrder=sh([...quizWrong]);reviewQIdx=0;reviewScore={c:0,w:0};}
+  if(m==='writeReview'){reviewWOrder=[...writeWrong];reviewWIdx=0;}
+  if(m==='bookmark'){bmOrder=[...bookmarked];bmIdx=0;}
+  render();
+}
+
+function updProg(){
+  let cur, total, rightLabel='';
+  if(mode==='list'){cur=30;total=30;}
+  else if(mode==='flash'){cur=idx+1;total=30;}
+  else if(mode==='quiz'){cur=Math.min(qIdx+1,30);total=30;rightLabel=`✅ ${score.c}  ❌ ${score.w}`;}
+  else if(mode==='write'){cur=wIdx+1;total=30;}
+  else if(mode==='quizReview'){total=Math.max(reviewQOrder.length,1);cur=Math.min(reviewQIdx+1,total);rightLabel=`✅ ${reviewScore.c}  ❌ ${reviewScore.w}`;}
+  else if(mode==='writeReview'){total=Math.max(reviewWOrder.length,1);cur=Math.min(reviewWIdx+1,total);}
+  else if(mode==='bookmark'){total=Math.max(bmOrder.length,1);cur=Math.min(bmIdx+1,total);}
+  const pct=Math.round(cur/total*100);
+  document.getElementById('prog-label').textContent=mode==='list'
+    ? (listFilter.trim() ? `검색결과 ${CARDS.filter(c=>c.verb.toLowerCase().includes(listFilter.trim().toLowerCase())||c.meaning.toLowerCase().includes(listFilter.trim().toLowerCase())).length}개` : `전체 30개`)
+    : `${cur} / ${total}`;
+  document.getElementById('prog-right').textContent=rightLabel;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  updateBadges();
+}
+
+function render(){
+  updProg();
+  const el=document.getElementById('main');
+  if(mode==='flash')renderFlash(el);
+  else if(mode==='quiz')renderQuiz(el);
+  else if(mode==='write')renderWrite(el);
+  else if(mode==='quizReview')renderQuizReview(el);
+  else if(mode==='writeReview')renderWriteReview(el);
+  else if(mode==='bookmark')renderBookmark(el);
+  else renderList(el);
+}
+
+function bmStarSVG(num){
+  const on = bookmarked.has(num) ? ' on' : '';
+  return `<button class="bm-star${on}" data-num="${num}" onclick="toggleBookmark(${num}, event)" title="북마크">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5l2.95 6.46 6.93.7-5.2 4.78 1.5 6.93L12 17.9l-6.18 3.47 1.5-6.93-5.2-4.78 6.93-.7L12 2.5z" stroke-linejoin="round"/></svg>
+  </button>`;
+}
+
+function renderFlash(el){
+  const c=CARDS[order[idx]];
+  el.innerHTML=`
+  <div class="card-scene" onclick="doFlip()">
+    <div class="card-inner${flipped?' flipped':''}" id="ci">
+      <div class="card-face">
+        <div class="card-num-row"><span class="card-num">${String(c.num).padStart(2,'0')}</span>${bmStarSVG(c.num)}</div>
+        <span class="card-page">${c.page}</span>
+        <div class="card-verb">${c.verb}</div>
+        <div class="card-tap">탭해서 뜻 확인 👆</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-num-row"><span class="card-num">${String(c.num).padStart(2,'0')}</span>${bmStarSVG(c.num)}</div>
+        <span class="card-page">${c.page}</span>
+        <div class="card-meaning">${c.meaning}</div>
+        <div class="card-sub">${c.sub}</div>
+        ${c.ex1_en?`<div class="card-ex">${c.ex1_en}</div><div class="card-ko">${c.ex1_ko}</div>`:''}
+        ${c.ex2_en?`<div class="card-ex">${c.ex2_en}</div><div class="card-ko">${c.ex2_ko}</div>`:''}
+        ${c.quote?`<div class="quote-box"><div class="quote-text">"${c.quote}"</div>${c.quoteKo?`<div style="font-size:0.72rem;color:#999;margin-top:5px;font-family:'Nanum Gothic',sans-serif;line-height:1.5;">"${c.quoteKo}"</div>`:''}</div>`:''}
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn" onclick="prev()" ${idx===0?'disabled':''}>◀ 이전</button>
+    <button class="nav-btn" onclick="doFlip()">뒤집기</button>
+    <button class="nav-btn primary" onclick="next()" ${idx===29?'disabled':''}>다음 ▶</button>
+  </div>
+  <div style="text-align:center;margin-top:6px">
+    <button class="shuffle-btn" onclick="doShuffle()">🔀 순서 섞기</button>
+  </div>`;
+}
+function doFlip(){flipped=!flipped;const ci=document.getElementById('ci');if(ci)ci.classList.toggle('flipped',flipped);}
+function prev(){if(idx>0){idx--;flipped=false;saveProgress();render();}}
+function next(){if(idx<29){idx++;flipped=false;saveProgress();render();}}
+function doShuffle(){sh(order);idx=0;flipped=false;saveProgress();render();}
+
+function renderQuiz(el){
+  if(qIdx>=30){
+    const pct=Math.round(score.c/30*100);
+    const msg=pct>=90?'🏆 완벽해요!':pct>=70?'👏 잘 했어요!':pct>=50?'💪 한번 더!':'📖 다시 공부해봐요!';
+    el.innerHTML=`<div class="result">
+      <div class="result-emoji">${pct>=90?'🎉':pct>=70?'😊':pct>=50?'🤔':'😅'}</div>
+      <div class="result-title">${msg}</div>
+      <div class="result-sub">30문제 완료</div>
+      <div class="stats">
+        <div class="stat"><div class="stat-n" style="color:var(--correct)">${score.c}</div><div class="stat-l">정답</div></div>
+        <div class="stat"><div class="stat-n" style="color:var(--wrong)">${score.w}</div><div class="stat-l">오답</div></div>
+        <div class="stat"><div class="stat-n">${pct}%</div><div class="stat-l">정답률</div></div>
+      </div>
+      <button class="retry-btn" onclick="setMode('quiz')">다시 풀기</button>
+      ${quizWrong.size?`<button class="retry-btn" style="margin-top:8px;background:var(--red);" onclick="setMode('quizReview')">📌 오답 ${quizWrong.size}개 다시 풀기</button>`:''}
+    </div>`;return;
+  }
+  const c=CARDS[qOrder[qIdx]];
+  const type=qIdx%2; // 0=EN→KO, 1=KO→EN
+  const q=type===0?c.verb:c.meaning;
+  const ans=type===0?c.meaning:c.verb;
+  const pool=CARDS.filter(x=>x.num!==c.num);sh(pool);
+  // 정답과 텍스트가 같은 카드(동일한 뜻을 가진 카드 등) 및 중복 후보 제거
+  const seen=new Set([ans]);
+  const wrongs=[];
+  for(const x of pool){
+    const val = type===0?x.meaning:x.verb;
+    if(seen.has(val)) continue;
+    seen.add(val);
+    wrongs.push(val);
+    if(wrongs.length===3) break;
+  }
+  const opts=sh([ans,...wrongs]);
+  el.innerHTML=`<div class="quiz-wrap">
+    <div class="quiz-q">
+      <div class="quiz-type">${type===0?'구동사 → 뜻':'뜻 → 구동사'}</div>
+      <div class="quiz-word${type===1?' ko':''}">${q}</div>
+    </div>
+    <div class="options">${opts.map(o=>`<button class="opt" onclick="checkQ(this,'${ans.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${o.replace(/'/g,"\\'").replace(/"/g,'&quot;')}',${c.num})">${o}</button>`).join('')}</div>
+  </div>`;
+}
+function checkQ(btn,correct,chosen,cardNum){
+  document.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
+  if(chosen===correct){
+    btn.classList.add('correct');score.c++;
+    quizWrong.delete(cardNum); // 다시 맞히면 오답노트에서 졸업
+  }
+  else{
+    btn.classList.add('wrong');score.w++;
+    quizWrong.add(cardNum);
+    document.querySelectorAll('.opt').forEach(o=>{if(o.textContent===correct)o.classList.add('reveal');});
+  }
+  updProg();
+  saveProgress();
+  setTimeout(()=>{
+    document.querySelectorAll('.opt').forEach(o=>o.blur());
+    if(document.activeElement) document.activeElement.blur();
+    qIdx++;
+    render();
+  },850);
+}
+
+function renderQuizReview(el){
+  if(reviewQOrder.length===0){
+    el.innerHTML=`<div class="result">
+      <div class="result-emoji">🎉</div>
+      <div class="result-title">오답노트가 비어있어요!</div>
+      <div class="result-sub">퀴즈를 풀다가 틀린 문제가 여기 모여요</div>
+      <button class="retry-btn" onclick="setMode('quiz')">퀴즈 풀러 가기</button>
+    </div>`;return;
+  }
+  if(reviewQIdx>=reviewQOrder.length){
+    el.innerHTML=`<div class="result">
+      <div class="result-emoji">🏁</div>
+      <div class="result-title">오답 복습 완료!</div>
+      <div class="result-sub">남은 오답 ${quizWrong.size}개</div>
+      <div class="stats">
+        <div class="stat"><div class="stat-n" style="color:var(--correct)">${reviewScore.c}</div><div class="stat-l">정답</div></div>
+        <div class="stat"><div class="stat-n" style="color:var(--wrong)">${reviewScore.w}</div><div class="stat-l">오답</div></div>
+      </div>
+      ${quizWrong.size?`<button class="retry-btn" style="background:var(--red);" onclick="setMode('quizReview')">남은 오답 다시 풀기</button>`:`<button class="retry-btn" onclick="setMode('quiz')">전체 퀴즈로</button>`}
+    </div>`;return;
+  }
+  const cardNum=reviewQOrder[reviewQIdx];
+  const c=CARDS[cardNum-1];
+  const type=reviewQIdx%2;
+  const q=type===0?c.verb:c.meaning;
+  const ans=type===0?c.meaning:c.verb;
+  const pool=CARDS.filter(x=>x.num!==c.num);sh(pool);
+  // 정답과 텍스트가 같은 카드(동일한 뜻을 가진 카드 등) 및 중복 후보 제거
+  const seen=new Set([ans]);
+  const wrongs=[];
+  for(const x of pool){
+    const val = type===0?x.meaning:x.verb;
+    if(seen.has(val)) continue;
+    seen.add(val);
+    wrongs.push(val);
+    if(wrongs.length===3) break;
+  }
+  const opts=sh([ans,...wrongs]);
+  el.innerHTML=`<div class="quiz-wrap">
+    <div class="quiz-q">
+      <div class="quiz-type" style="background:var(--wrong-bg);color:var(--wrong);">📌 오답노트 · ${type===0?'구동사 → 뜻':'뜻 → 구동사'}</div>
+      <div class="quiz-word${type===1?' ko':''}">${q}</div>
+    </div>
+    <div class="options">${opts.map(o=>`<button class="opt" onclick="checkReviewQ(this,'${ans.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${o.replace(/'/g,"\\'").replace(/"/g,'&quot;')}',${c.num})">${o}</button>`).join('')}</div>
+  </div>`;
+}
+function checkReviewQ(btn,correct,chosen,cardNum){
+  document.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
+  if(chosen===correct){
+    btn.classList.add('correct');reviewScore.c++;
+    quizWrong.delete(cardNum);
+  }
+  else{
+    btn.classList.add('wrong');reviewScore.w++;
+    document.querySelectorAll('.opt').forEach(o=>{if(o.textContent===correct)o.classList.add('reveal');});
+  }
+  updProg();
+  saveProgress();
+  setTimeout(()=>{
+    document.querySelectorAll('.opt').forEach(o=>o.blur());
+    if(document.activeElement) document.activeElement.blur();
+    reviewQIdx++;
+    render();
+  },850);
+}
+
+function renderWrite(el){
+  if(wIdx>=30){
+    el.innerHTML=`<div class="result">
+      <div class="result-emoji">✍️</div>
+      <div class="result-title">작문 완료!</div>
+      <div class="result-sub">30개 구동사 작문 연습 끝</div>
+      <button class="retry-btn" onclick="setMode('write')" style="margin-top:16px">다시 하기</button>
+      ${writeWrong.size?`<button class="retry-btn" style="margin-top:8px;background:var(--red);" onclick="setMode('writeReview')">📝 오답 ${writeWrong.size}개 다시 쓰기</button>`:''}
+    </div>`;return;
+  }
+  const c=CARDS[wOrder[wIdx]];
+  const fb=wFeedback[wIdx]||{};
+  el.innerHTML=`
+  <div style="background:var(--card-bg);border-radius:18px;border:1.5px solid var(--border);padding:18px 18px 14px;margin-bottom:12px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="font-family:'Bangers',cursive;font-size:1rem;color:var(--yellow);background:var(--dark);padding:2px 10px;border-radius:20px;">${String(c.num).padStart(2,'0')}</span>
+      <span id="verb-hint" onclick="this.classList.toggle('revealed')" style="font-family:'Black Han Sans',sans-serif;font-size:1.1rem;background:#ccc;color:transparent;border-radius:6px;cursor:pointer;padding:0 4px;user-select:none;transition:all .2s;" title="클릭하면 구동사 확인">${c.verb}</span>
+      <span style="font-size:0.72rem;color:var(--muted);margin-left:auto;">${c.page}</span>
+    </div>
+    <div style="font-size:0.82rem;font-weight:700;color:var(--red);margin-bottom:10px;">💬 ${c.meaning} — ${c.sub}</div>
+    <div class="writing-section">
+      <div class="writing-label">✍️ 작문 연습</div>
+      <div class="writing-item">
+        <div class="wq">${c.wq1}</div>
+        <textarea class="w-input" id="wi1" placeholder="영어로 써보세요..." ${fb.fb1?'disabled':''}>${fb.input1||fb.draft1||''}</textarea>
+        ${fb.fb1
+          ? `<div class="feedback-box">${fb.fb1}</div>`
+          : `<button class="check-btn" onclick="checkWrite(${wIdx},1)">✅ 정답보기</button>`}
+      </div>
+      <div class="writing-item">
+        <div class="wq">${c.wq2}</div>
+        <textarea class="w-input" id="wi2" placeholder="영어로 써보세요..." ${fb.fb2?'disabled':''}>${fb.input2||fb.draft2||''}</textarea>
+        ${fb.fb2
+          ? `<div class="feedback-box">${fb.fb2}</div>`
+          : `<button class="check-btn" onclick="checkWrite(${wIdx},2)">✅ 정답보기</button>`}
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn" onclick="wPrev()" ${wIdx===0?'disabled':''}>◀ 이전</button>
+    <button class="nav-btn primary" onclick="wNext()" ${wIdx===29?'disabled':''}>다음 ▶</button>
+  </div>
+  <div style="text-align:center;margin-top:6px">
+    <button class="shuffle-btn" onclick="doWriteShuffle()">🔀 순서 섞기</button>
+  </div>`;
+}
+function doWriteShuffle(){
+  // 카드 번호(num) 기준으로 "다 푼 카드(1·2번 모두 첨삭 완료)"와 "안 푼 카드"를 구분
+  const feedbackByNum = {};
+  Object.keys(wFeedback).forEach(oldIdx=>{
+    const num = wOrder[oldIdx];
+    if(num!==undefined) feedbackByNum[num] = wFeedback[oldIdx];
+  });
+  const isDone = (num) => {
+    const fb = feedbackByNum[num];
+    return !!(fb && fb.fb1 && fb.fb2);
+  };
+
+  // 1) 다 푼 카드는 지금 순서(wOrder) 그대로의 위치를 유지
+  // 2) 안 푼 카드만 따로 모아서 섞은 뒤, 원래 비어있던 자리(안 푼 카드 자리)에 다시 채워넣음
+  const donePositions = [];   // [{pos, num}]
+  const undoneNums = [];
+  wOrder.forEach((num,pos)=>{
+    if(isDone(num)) donePositions.push({pos, num});
+    else undoneNums.push(num);
+  });
+  sh(undoneNums);
+
+  const newOrder = new Array(30).fill(null);
+  donePositions.forEach(({pos,num})=>{ newOrder[pos] = num; });
+  let ui = 0;
+  for(let pos=0; pos<30; pos++){
+    if(newOrder[pos]===null){ newOrder[pos] = undoneNums[ui++]; }
+  }
+  wOrder = newOrder;
+
+  const newFeedback = {};
+  wOrder.forEach((num,newIdx)=>{
+    if(feedbackByNum[num]!==undefined) newFeedback[newIdx] = feedbackByNum[num];
+  });
+  wFeedback = newFeedback;
+  // 현재 보던 위치는 유지 (처음으로 돌아가지 않음)
+  saveProgress();
+  showToast('🔀 안 푼 문제만 섞었어요! (푼 답은 그대로예요)');
+  render();
+}
+
+function checkWrite(cardIdx, qNum){
+  const c = CARDS[wOrder[cardIdx]];
+  const inputEl = document.getElementById('wi'+qNum);
+  const userText = inputEl ? inputEl.value.trim() : '';
+  if(!userText){alert('먼저 영어 문장을 써주세요!');return;}
+
+  const modelAns = qNum===1 ? c.wa1 : c.wa2;
+
+  if(!wFeedback[cardIdx]) wFeedback[cardIdx]={};
+  if(qNum===1){wFeedback[cardIdx].input1=userText;delete wFeedback[cardIdx].draft1;} else {wFeedback[cardIdx].input2=userText;delete wFeedback[cardIdx].draft2;}
+
+  const result = buildFeedback(userText, modelAns);
+  if(qNum===1){wFeedback[cardIdx].fb1=result.html;wFeedback[cardIdx].err1=result.hasError;}
+  else {wFeedback[cardIdx].fb2=result.html;wFeedback[cardIdx].err2=result.hasError;}
+
+  // 오답노트 갱신: 1번 또는 2번 중 하나라도 틀리면 포함, 둘 다 맞으면 졸업
+  const fb=wFeedback[cardIdx];
+  const stillWrong = fb.err1 || fb.err2;
+  if(stillWrong) writeWrong.add(c.num);
+  else if(fb.fb1!==undefined && fb.fb2!==undefined) writeWrong.delete(c.num);
+
+  saveProgress();
+  render();
+}
+
+function normalize(str){
+  return str
+    .toLowerCase()
+    .replace(/[\u2018\u2019]/g, "'")       // 스마트 따옴표(') 통일
+    .replace(/[^a-z0-9'\s]/g, ' ')          // 문장부호·대시 등은 공백으로 치환 (단어 붙어버리는 것 방지)
+    .replace(/\s+/g, ' ')                   // 연속 공백 → 한 칸으로
+    .trim();
+}
+
+function buildFeedback(userRaw, modelRaw){
+  const user = normalize(userRaw);
+  const model = normalize(modelRaw);
+
+  // Perfect match
+  if(user === model){
+    return {hasError:false, html:`<span style="color:#27500a;font-weight:800;">✅ 완벽해요!</span>
+    <div class="fb-label" style="margin-top:8px">모범 답안</div>
+    <div class="correct-ans">${modelRaw}</div>`};
+  }
+
+  // Word-level diff
+  const uWords = user.split(/\s+/);
+  const mWords = model.split(/\s+/);
+  const mRawWords = modelRaw.split(/\s+/);
+
+  // LCS-based diff
+  const m = uWords.length, n = mWords.length;
+  const dp = Array.from({length:m+1},()=>new Array(n+1).fill(0));
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+    dp[i][j] = uWords[i-1]===mWords[j-1] ? dp[i-1][j-1]+1 : Math.max(dp[i-1][j],dp[i][j-1]);
+
+  // Traceback
+  let i=m, j=n, diff=[];
+  while(i>0||j>0){
+    if(i>0&&j>0&&uWords[i-1]===mWords[j-1]){
+      diff.unshift({type:'ok', word:mRawWords[j-1]});i--;j--;
+    } else if(j>0&&(i===0||dp[i][j-1]>=dp[i-1][j])){
+      diff.unshift({type:'add', word:mRawWords[j-1]});j--;
+    } else {
+      diff.unshift({type:'del', word:uWords[i-1]});i--;
+    }
+  }
+
+  const hasError = diff.some(d=>d.type!=='ok');
+  let diffHtml = diff.map(d=>{
+    if(d.type==='ok') return `<span style="color:#27500a">${d.word}</span>`;
+    if(d.type==='del') return `<del>${d.word}</del>`;
+    if(d.type==='add') return `<ins>${d.word}</ins>`;
+  }).join(' ');
+
+  return {hasError, html:`<span style="color:#e63946;font-weight:800;">❌ 수정이 필요해요</span>
+  <div class="fb-label" style="margin-top:8px">내가 쓴 문장 vs 모범 답안</div>
+  <div style="line-height:2;font-size:0.82rem">${diffHtml}</div>
+  <div class="fb-label" style="margin-top:8px">모범 답안</div>
+  <div class="correct-ans">${modelRaw}</div>
+  <div style="font-size:0.7rem;color:var(--muted);margin-top:4px"><del>빨간색</del> = 내가 쓴 것 &nbsp; <ins>노란색</ins> = 빠진 것 &nbsp; <span style="color:#27500a">초록색</span> = 맞은 것</div>`};
+}
+
+function saveDraft(){
+  // 정답보기를 누르기 전, textarea에 입력 중이던 내용을 임시 저장해 이동 시 유실 방지
+  if(!wFeedback[wIdx]) wFeedback[wIdx]={};
+  const fb = wFeedback[wIdx];
+  const wi1 = document.getElementById('wi1');
+  const wi2 = document.getElementById('wi2');
+  if(wi1 && !fb.fb1 && wi1.value.trim()) fb.draft1 = wi1.value;
+  if(wi2 && !fb.fb2 && wi2.value.trim()) fb.draft2 = wi2.value;
+}
+function wPrev(){if(wIdx>0){saveDraft();wIdx--;saveProgress();render();}}
+function wNext(){if(wIdx<29){saveDraft();wIdx++;saveProgress();render();}}
+
+function renderWriteReview(el){
+  if(reviewWOrder.length===0){
+    el.innerHTML=`<div class="result">
+      <div class="result-emoji">🎉</div>
+      <div class="result-title">오답노트가 비어있어요!</div>
+      <div class="result-sub">작문에서 수정이 필요했던 문장이 여기 모여요</div>
+      <button class="retry-btn" onclick="setMode('write')">작문 풀러 가기</button>
+    </div>`;return;
+  }
+  if(reviewWIdx>=reviewWOrder.length){
+    el.innerHTML=`<div class="result">
+      <div class="result-emoji">🏁</div>
+      <div class="result-title">오답 복습 완료!</div>
+      <div class="result-sub">남은 오답 ${writeWrong.size}개</div>
+      ${writeWrong.size?`<button class="retry-btn" style="background:var(--red);" onclick="setMode('writeReview')">남은 오답 다시 쓰기</button>`:`<button class="retry-btn" onclick="setMode('write')">전체 작문으로</button>`}
+    </div>`;return;
+  }
+  const cardNum = reviewWOrder[reviewWIdx];
+  const c = CARDS[cardNum-1];
+  // wFeedback의 key는 wOrder 인덱스 기준이라, 일반 모드(원래 순서)일 때의 인덱스를 사용
+  const origIdx = wOrder.indexOf(cardNum-1);
+  const fb = (origIdx>=0 ? wFeedback[origIdx] : null) || {};
+  el.innerHTML=`
+  <div style="background:var(--card-bg);border-radius:18px;border:1.5px solid var(--border);padding:18px 18px 14px;margin-bottom:12px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="font-family:'Bangers',cursive;font-size:1rem;color:var(--yellow);background:var(--dark);padding:2px 10px;border-radius:20px;">${String(c.num).padStart(2,'0')}</span>
+      <span style="font-family:'Black Han Sans',sans-serif;font-size:1.1rem;color:var(--dark);">${c.verb}</span>
+      <span style="font-size:0.72rem;color:var(--muted);margin-left:auto;">${c.page}</span>
+    </div>
+    <div style="font-size:0.82rem;font-weight:700;color:var(--red);margin-bottom:10px;">💬 ${c.meaning} — ${c.sub}</div>
+    <div class="writing-section">
+      ${fb.err1?`<div class="writing-item">
+        <div class="wq">${c.wq1}</div>
+        <textarea class="w-input" id="rwi1" placeholder="다시 영어로 써보세요..." ${fb.reFb1?'disabled':''}>${fb.reInput1||''}</textarea>
+        ${fb.reFb1
+          ? `<div class="feedback-box">${fb.reFb1}</div>`
+          : `<button class="check-btn" onclick="checkReviewWrite(${cardNum},1)">✅ 정답보기</button>`}
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:6px;">이전 시도: ${fb.input1||''}</div>
+      </div>`:''}
+      ${fb.err2?`<div class="writing-item">
+        <div class="wq">${c.wq2}</div>
+        <textarea class="w-input" id="rwi2" placeholder="다시 영어로 써보세요..." ${fb.reFb2?'disabled':''}>${fb.reInput2||''}</textarea>
+        ${fb.reFb2
+          ? `<div class="feedback-box">${fb.reFb2}</div>`
+          : `<button class="check-btn" onclick="checkReviewWrite(${cardNum},2)">✅ 정답보기</button>`}
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:6px;">이전 시도: ${fb.input2||''}</div>
+      </div>`:''}
+      ${(!fb.err1 && !fb.err2 && (fb.reFb1||fb.reFb2||fb.fb1!==undefined))?`<div style="text-align:center;padding:14px;color:var(--correct);font-weight:800;font-size:0.88rem;">🎉 이 카드는 완벽해요! 오답노트에서 졸업했어요.</div>`:''}
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn" onclick="reviewWPrev()" ${reviewWIdx===0?'disabled':''}>◀ 이전</button>
+    <button class="nav-btn primary" onclick="reviewWNext()">다음 ▶</button>
+  </div>`;
+}
+
+function checkReviewWrite(cardNum, qNum){
+  const c = CARDS[cardNum-1];
+  const inputEl = document.getElementById('rwi'+qNum);
+  const userText = inputEl ? inputEl.value.trim() : '';
+  if(!userText){alert('먼저 영어 문장을 써주세요!');return;}
+  const modelAns = qNum===1 ? c.wa1 : c.wa2;
+  const result = buildFeedback(userText, modelAns);
+
+  // 원래 wFeedback에 재시도 결과를 별도 필드(reFb/reInput)로 저장 → 해당 문항 칸 안에 바로 표시
+  const origIdx = wOrder.indexOf(cardNum-1);
+  if(origIdx>=0){
+    if(!wFeedback[origIdx]) wFeedback[origIdx]={};
+    const fb = wFeedback[origIdx];
+    if(qNum===1){fb.reInput1=userText;fb.reFb1=result.html;fb.err1=result.hasError;}
+    else {fb.reInput2=userText;fb.reFb2=result.html;fb.err2=result.hasError;}
+    if(!fb.err1 && !fb.err2) writeWrong.delete(cardNum);
+  }
+  saveProgress();
+  updateBadges();
+  render();
+}
+
+function reviewWPrev(){if(reviewWIdx>0){reviewWIdx--;render();}}
+function reviewWNext(){reviewWIdx++;render();}
+
+function renderBookmark(el){
+  if(bmOrder.length===0){
+    el.innerHTML=`<div class="result">
+      <div class="result-emoji">🔖</div>
+      <div class="result-title">북마크가 비어있어요!</div>
+      <div class="result-sub">플래시카드의 별 아이콘을 눌러 안 외워지는 구동사를 모아보세요</div>
+      <button class="retry-btn" onclick="setMode('flash')">플래시카드로 가기</button>
+    </div>`;return;
+  }
+  if(bmIdx>=bmOrder.length){
+    el.innerHTML=`<div class="result">
+      <div class="result-emoji">🏁</div>
+      <div class="result-title">북마크 끝까지 봤어요!</div>
+      <div class="result-sub">현재 북마크 ${bookmarked.size}개</div>
+      <button class="retry-btn" onclick="setMode('bookmark')">처음부터 다시 보기</button>
+    </div>`;return;
+  }
+  const cardNum = bmOrder[bmIdx];
+  const c = CARDS[cardNum-1];
+  el.innerHTML=`
+  <div class="card-scene" onclick="doFlip()">
+    <div class="card-inner${flipped?' flipped':''}" id="ci">
+      <div class="card-face">
+        <div class="card-num-row"><span class="card-num">${String(c.num).padStart(2,'0')}</span>${bmStarSVG(c.num)}</div>
+        <span class="card-page">${c.page}</span>
+        <div class="card-verb">${c.verb}</div>
+        <div class="card-tap">탭해서 뜻 확인 👆</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-num-row"><span class="card-num">${String(c.num).padStart(2,'0')}</span>${bmStarSVG(c.num)}</div>
+        <span class="card-page">${c.page}</span>
+        <div class="card-meaning">${c.meaning}</div>
+        <div class="card-sub">${c.sub}</div>
+        ${c.ex1_en?`<div class="card-ex">${c.ex1_en}</div><div class="card-ko">${c.ex1_ko}</div>`:''}
+        ${c.ex2_en?`<div class="card-ex">${c.ex2_en}</div><div class="card-ko">${c.ex2_ko}</div>`:''}
+        ${c.quote?`<div class="quote-box"><div class="quote-text">"${c.quote}"</div>${c.quoteKo?`<div style="font-size:0.72rem;color:#999;margin-top:5px;font-family:'Nanum Gothic',sans-serif;line-height:1.5;">"${c.quoteKo}"</div>`:''}</div>`:''}
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn" onclick="bmPrev()" ${bmIdx===0?'disabled':''}>◀ 이전</button>
+    <button class="nav-btn" onclick="doFlip()">뒤집기</button>
+    <button class="nav-btn primary" onclick="bmNext()">다음 ▶</button>
+  </div>`;
+}
+function bmPrev(){if(bmIdx>0){bmIdx--;flipped=false;render();}}
+function bmNext(){
+  flipped=false;
+  // 방금 보고 있던 카드가 별 해제된 상태라면 목록에서 제거 (이동 전 인덱스 기준)
+  const leavingNum = bmOrder[bmIdx];
+  if(leavingNum!==undefined && !bookmarked.has(leavingNum)){
+    bmOrder.splice(bmIdx,1);
+  } else {
+    bmIdx++;
+  }
+  if(bmIdx>bmOrder.length) bmIdx=bmOrder.length;
+  render();
+}
+
+function buildListItemsHtml(){
+  const q = (listFilter||'').trim().toLowerCase();
+  const filtered = q
+    ? CARDS.filter(c => c.verb.toLowerCase().includes(q) || c.meaning.toLowerCase().includes(q))
+    : CARDS;
+  return filtered.length
+    ? filtered.map(c=>`
+  <div class="list-item" onclick="goFlash(${c.num-1})">
+    <span class="li-num">${String(c.num).padStart(2,'0')}</span>
+    <span class="li-star">${bookmarked.has(c.num)?'⭐':''}</span>
+    <span class="li-verb">${c.verb}</span>
+    <span class="li-meaning">${c.meaning}</span>
+    <span class="li-page">${c.page}</span>
+  </div>`).join('')
+    : `<div class="list-empty">🔍 "${listFilter}"에 해당하는 구동사가 없어요</div>`;
+}
+function renderList(el){
+  // 검색창(input)은 한 번만 그리고, 이후 타이핑마다 다시 그리지 않음
+  // (input을 매번 재생성하면 한글 IME 조합이 끊겨 자음/모음이 분리되어 보이는 문제가 생김)
+  el.innerHTML = `<input type="text" class="list-search" id="list-search-input" placeholder="🔍 구동사 또는 뜻 검색..." value="${(listFilter||'').replace(/"/g,'&quot;')}">
+  <div id="list-items">${buildListItemsHtml()}</div>`;
+  const inputEl = document.getElementById('list-search-input');
+  if(inputEl){
+    inputEl.oninput = (e)=>{
+      listFilter = e.target.value;
+      updateListItemsOnly();
+      updProg();
+    };
+  }
+}
+function updateListItemsOnly(){
+  // 카드 목록 부분만 갱신. 검색창은 절대 건드리지 않아 IME 조합이 끊기지 않음
+  const itemsEl = document.getElementById('list-items');
+  if(itemsEl) itemsEl.innerHTML = buildListItemsHtml();
+}
+function goFlash(i){
+  mode='flash';
+  // order가 섞여있을 수 있으므로, "카드 인덱스 i"가 order 배열의 어느 위치에 있는지 찾아서 이동
+  const pos = order.indexOf(i);
+  idx = pos>=0 ? pos : i;
+  flipped=false;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.getAttribute('onclick')===`setMode('flash')`));
+  saveProgress();render();
+}
+
+const _resumed = loadProgress();
+render();
+if(_resumed) showToast(`📌 이어서 시작! (오답노트 퀴즈 ${quizWrong.size}개 · 작문 ${writeWrong.size}개)`);
+</script>
+</body>
+</html>
