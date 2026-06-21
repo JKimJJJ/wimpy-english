@@ -267,8 +267,24 @@ function _pickVoice(){
       if(chosen) return chosen;
     }
   }catch(e){}
-  // 2순위: 설정이 없으면 영어 음성 중 남성으로 보이는 것을 자동 선택 (이름 기반 휴리스틱)
-  const enVoices = voices.filter(v=>v.lang && v.lang.toLowerCase().startsWith('en'));
+  // 2순위: 설정이 없으면 주요 영어권(미국/영국/호주/캐나다) 음성 중 남성으로 보이는 것을 자동 선택
+  //         (인도식, 남아공식 등 잡다한 액센트와 노벨티(효과음)·테스트용 음성은 자동 후보에서 제외)
+  const NOVELTY_NAMES_EXACT = [
+    'albert','bad news','bahh','bells','boing','bubbles','cellos','deranged',
+    'good news','hysterical','pipe organ','organ','trinoids','whisper','zarvox',
+    'jester','wobble','rocko','superstar','grandma','grandpa',
+    'test','default','robot','espeak','festival','pico'
+  ];
+  const isNovelty = (v) => {
+    const n = v.name.trim();
+    return NOVELTY_NAMES_EXACT.some(bad => new RegExp('\\b' + bad.replace(/\s+/g,'\\s+') + '\\b', 'i').test(n));
+  };
+  const MAJOR_LANGS = ['en-us', 'en-gb', 'en-au', 'en-ca'];
+  let majorVoices = voices.filter(v=>v.lang && MAJOR_LANGS.includes(v.lang.toLowerCase()) && !isNovelty(v));
+  // 기기 내장 음성이 있으면 온라인 전용 음성(끊길 수 있음)보다 우선 사용
+  const localMajor = majorVoices.filter(v=>v.localService !== false);
+  if(localMajor.length) majorVoices = localMajor;
+  const enVoices = majorVoices.length ? majorVoices : voices.filter(v=>v.lang && v.lang.toLowerCase().startsWith('en') && !isNovelty(v));
   const maleHints = ['male','daniel','alex','david','fred','aaron','tom','james','oliver','arthur','eddy'];
   const male = enVoices.find(v=> maleHints.some(h=>v.name.toLowerCase().includes(h)));
   return male || enVoices[0] || voices[0] || null;
